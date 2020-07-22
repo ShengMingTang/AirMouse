@@ -1,6 +1,6 @@
 // Standard includes
-#include <app_defines.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // Simplelink includes
@@ -31,6 +31,7 @@
 #include "pinmux.h"
 
 // custom includes
+#include "app_defines.h"
 #include "app_global_variables.h"
 #include "app_simplelink_config.h"
 #include "app_p2p.h"
@@ -134,6 +135,7 @@ long WlanConnect()
 
     // Wait till Device acquired an IP in P2P mode
     while(! IS_P2P_REQ_RCVD(g_ulStatus))
+
     {
 #ifndef SL_PLATFORM_MULTI_THREADED
         _SlNonOsMainLoopTask();

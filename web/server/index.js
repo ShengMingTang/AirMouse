@@ -1,19 +1,28 @@
-// const server = require('http').createServer();
-// const io = require('socket.io')(server);
-// io.on('connection', client => {
-//     console.log(client);
-//     client.on('event', data => { console.log(data) });
-//     client.on('disconnect', () => { /* … */ });
-// });
-// server.listen(8080);
+// const express = require('express');
+// const app = express();
+
+// app.use('/', function(req, res, next){
+//     console.log('Request Type:', req.method);
+//     next();
+// })
+
+// app.listen(3000, () => {
+//     console.log('listen on 3000');
+// })
+
 const express = require('express');
+
 const app = express();
 
-app.use('/', function(req, res, next){
-    console.log('Request Type:', req.method);
-    next();
-})
+// app.use(requestLogger); // debug only
+app.use(express.static('../client/dist', {
+    setHeaders: (res, path, stat) => {
+        res.set('Cache-Control', 'public, s-maxage=86400');
+    }
+}));
+app.get('/*', (req, res) => res.redirect('/'));
 
-app.listen(3000, () => {
-    console.log('listen on 3000');
-})
+const port = 3000;
+app.listen(port, () => {
+    console.log(`Server is up and running on port ${port}...`);
+});

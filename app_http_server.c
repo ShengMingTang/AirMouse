@@ -1,5 +1,6 @@
 // Standard includes
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // Simplelink includes
@@ -126,23 +127,30 @@ void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pSlHttpServerEvent,
     {
         case SL_NETAPP_HTTPGETTOKENVALUE_EVENT:
         {
-          unsigned char *ptr;
-
-          ptr = pSlHttpServerResponse->ResponseData.token_value.data;
-          pSlHttpServerResponse->ResponseData.token_value.len = 0;
-          if(IS_TOKEN_MATCH(pSlHttpServerEvent->EventData.httpTokenName.data, "__SL_G_UXX"))
-          {
-            strLenVal = strlen((const char*)"Shengming.tang");
-            memcpy(ptr, "Shengming.tang", strLenVal);
-            ptr += strLenVal;
-            pSlHttpServerResponse->ResponseData.token_value.len = strLenVal;
-            *ptr = '\0';
-          }
+          unsigned char *ptrName = pSlHttpServerEvent->EventData.httpTokenName.data;
+          long lenName = pSlHttpServerEvent->EventData.httpTokenName.len;
+          unsigned char *ptrValue = pSlHttpServerResponse->ResponseData.token_value.data;
+          
           // always print
-          for(i = 0; i < pSlHttpServerEvent->EventData.httpTokenName.len; i++){
-            UART_PRINT("%c", pSlHttpServerEvent->EventData.httpTokenName.data[i]);
-          }
+          CHARS_PRINT(pSlHttpServerEvent->EventData.httpTokenName.data, pSlHttpServerEvent->EventData.httpTokenName.len);
           UART_PRINT("\n\r");
+          
+          if(IS_TOKEN_MATCH(ptrName, PULL_FILENAME_TOKEN)){ // get current pull filename
+
+          }
+          else if(IS_TOKEN_MATCH(ptrName, PULL_OFFSET_TOKEN)){ // get curretn offset
+
+          }
+          else if(IS_TOKEN_MATCH(ptrName, PULL_FETCH_PREFIX)){ // pull for data
+
+          }
+          else if(IS_TOKEN_MATCH(ptrName, "__SL_G_UXX")){ // test
+            strLenVal = strlen((const char*)"Shengming.tang");
+            memcpy(ptrValue, "Shengming.tang", strLenVal);
+            ptrValue += strLenVal;
+            pSlHttpServerResponse->ResponseData.token_value.len = strLenVal;
+            *ptrValue = '\0';
+          }
         }
         break;
 
@@ -160,7 +168,10 @@ void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pSlHttpServerEvent,
           CHARS_PRINT(pSlHttpServerEvent->EventData.httpPostData.token_value.data, pSlHttpServerEvent->EventData.httpPostData.token_value.len);
           UART_PRINT("\n\r");
           
-          if(IS_TOKEN_MATCH(ptrName, PUSH_START_TOKEN)){ // push starts
+          // ******************************************************************
+          // Push part -- Start
+          // ******************************************************************
+          if(IS_TOKEN_MATCH(ptrName, PUSH_START_TOKEN)){ // init a push
             // atomic
             osi_LockObjLock(&pushLock, OSI_WAIT_FOREVER);
             memcpy(pushMsg.msg, ptrValue, lenValue);
@@ -171,7 +182,7 @@ void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pSlHttpServerEvent,
             // atomic
             osi_SyncObjSignalFromISR(&pushSync);
           }
-          else if(IS_TOKEN_MATCH(ptrName, PUSH_END_TOKEN)){
+          else if(IS_TOKEN_MATCH(ptrName, PUSH_END_TOKEN)){ // end a push
             // atomic
             osi_LockObjLock(&pushLock, OSI_WAIT_FOREVER);
             memcpy(pushMsg.msg, ptrValue, lenValue);
@@ -192,6 +203,39 @@ void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pSlHttpServerEvent,
             // atomic
             osi_SyncObjSignalFromISR(&pushSync);
           }
+          // ******************************************************************
+          // Push part -- End
+          // ******************************************************************
+
+
+          // ******************************************************************
+          // Pull part -- Start
+          // ******************************************************************
+          else if(IS_TOKEN_MATCH(ptrName, PULL_START_TOKEN)){ // init a pull
+            // atomic
+            osi_LockObjLock(&pullLock, OSI_WAIT_FOREVER);
+            memcpy(pullMsg.msg, ptrValue, lenValue);
+            (pullMsg.msg)[lenValue] = '\0';
+            pullMsg.msgLen = lenValue;
+            pullMsg.op = STORAGE_OP_OPEN_READ;
+            osi_LockObjUnlock(&pullLock);
+            // atomic
+            osi_SyncObjSignalFromISR(&pullSync);
+          }
+          else if(IS_TOKEN_MATCH(ptrName, PULL_END_TOKEN)){ // end a pull
+            // atomic
+            osi_LockObjLock(&pullLock, OSI_WAIT_FOREVER);
+            memcpy(pullMsg.msg, ptrValue, lenValue);
+            (pullMsg.msg)[lenValue] = '\0';
+            pullMsg.msgLen = lenValue;
+            pullMsg.op = STORAGE_OP_CLOSE;
+            osi_LockObjUnlock(&pullLock);
+            // atomic
+            osi_SyncObjSignalFromISR(&pullSync);
+          }
+          // ******************************************************************
+          // Pull part -- Start
+          // ******************************************************************
         }
           break;
         default:

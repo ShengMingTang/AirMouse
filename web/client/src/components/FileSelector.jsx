@@ -2,9 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
-import {Text, Button} from 'reactstrap';
+import {Button} from 'reactstrap';
 
 import {onChange, onPush} from 'states/fileSelector-actions.js';
+
+import './FileSelector.css';
 
 class FileSelector extends React.Component{
     static propTypes = {
@@ -20,9 +22,10 @@ class FileSelector extends React.Component{
     render(){
         return (
             <div>
-                <input type="file" onChange= {(e) => {
-                    this.handleChange(e.target.files)
-                }}/>
+                <label className="custom-file-upload">
+                    <input type="file" onChange={(e) => {this.handleChange(e.target.files)}}/>
+                    Push File
+                </label>
                 <p>
                     {this.props.filename}
                 </p>

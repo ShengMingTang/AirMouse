@@ -2,6 +2,14 @@
 import axios from 'axios';
 import {BLOCK_SIZE, bin2Base64} from './common.js';
 
+// #tested
+function createXHR(method, url, onload){
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.onload = onload;
+    return xhr;
+}
 //****************************************************************************
 // #tested
 //! List the files in the given directory

@@ -12,13 +12,15 @@ import Main from 'components/Main.jsx';
 // import some reducers
 import {main} from 'states/main-reducers.js';
 import {fileSelector} from 'states/fileSelector-reducers.js';
+import {fileSys} from 'states/fileSys-reducers.js';
 
 import 'bootstrap/dist/css/bootstrap.css';
+// import 'semantic-ui-css/semantic.min.css';
 
 window.onload = function(){
     const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
     const store = createStore(combineReducers({
-        main, fileSelector
+        main, fileSelector, fileSys
     }), composeEnhancers(applyMiddleware(thunkMiddleware/*, loggerMiddleware*/)));
     ReactDom.render(
         <Provider store={store}>

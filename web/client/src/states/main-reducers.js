@@ -1,5 +1,7 @@
 const initMainState = {
-    status: ''
+    status: '',
+    document: null,
+    test: '1'
 };
 
 export function main(state = initMainState, action){
@@ -9,6 +11,11 @@ export function main(state = initMainState, action){
                 ...state,
                 status: action.status
             };
+        case '@MAIN/DOC':
+            return {
+                ...state,
+                document: action.document
+            }
         default:
             return state;
     }

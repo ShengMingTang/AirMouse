@@ -1,6 +1,7 @@
-import {postTest} from 'api/common.js';
+import {postTest, lookTest} from 'api/common.js';
 
 function status(sts){
+    console.log(sts);
     return {
         type: '@MAIN/STATUS',
         status: sts
@@ -14,5 +15,6 @@ export function test(){
         }).catch(err => {
             dispatch(status(err.toString()));
         });
+        // dispatch(status(getState().main.test))
     };
 }

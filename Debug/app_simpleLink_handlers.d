@@ -5,6 +5,10 @@ app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.L
 app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h
 app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h
 app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h
+app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdio.h
+app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h
+app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h
+app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h
 app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h
 app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h
 app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../user.h
@@ -43,12 +47,19 @@ app_simpleLink_handlers.obj: ../app_global_variables.h
 app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h
 app_simpleLink_handlers.obj: ../app_defines.h
 app_simpleLink_handlers.obj: ../app_storage.h
+app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ff.h
+app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/integer.h
+app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ffconf.h
 
 ../app_simpleLink_handlers.c: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdio.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../user.h: 
@@ -87,3 +98,6 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h:
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h: 
 ../app_defines.h: 
 ../app_storage.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ff.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/integer.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ffconf.h: 

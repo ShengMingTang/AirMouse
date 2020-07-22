@@ -1,11 +1,14 @@
 # FIXED
 
 app_p2p.obj: ../app_p2p.c
-app_p2p.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/app_defines.h
 app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h
 app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h
 app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h
 app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdio.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h
 app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h
 app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h
 app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../user.h
@@ -40,17 +43,21 @@ app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/uart_if.h
 app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h
 app_p2p.obj: ../smartconfig.h
 app_p2p.obj: ../pinmux.h
+app_p2p.obj: ../app_defines.h
 app_p2p.obj: ../app_global_variables.h
 app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h
 app_p2p.obj: ../app_simplelink_config.h
 app_p2p.obj: ../app_p2p.h
 
 ../app_p2p.c: 
-D:/cc3200/cc3200-code/AirMouse_with_cc2541/app_defines.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdio.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../user.h: 
@@ -85,6 +92,7 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/uart_if.h:
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h: 
 ../smartconfig.h: 
 ../pinmux.h: 
+../app_defines.h: 
 ../app_global_variables.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h: 
 ../app_simplelink_config.h: 

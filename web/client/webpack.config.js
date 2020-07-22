@@ -4,7 +4,11 @@ const webpack = require('webpack');
 const srcPath = path.resolve(__dirname, 'src');
 const distPath = path.resolve(__dirname, 'dist');
 
+// minimize code size
+const TerserPlugin = require('terser-webpack-plugin');
+
 module.exports = {
+    mode: 'development',
     context: srcPath,
     resolve: {
         alias: {
@@ -43,7 +47,7 @@ module.exports = {
                             ],
                             plugins: [
                                 '@babel/plugin-proposal-class-properties',
-                                '@babel/plugin-proposal-object-rest-spread'
+                                '@babel/plugin-proposal-object-rest-spread',
                             ]
                         }
                     }
@@ -60,6 +64,7 @@ module.exports = {
                         }
                     }
                 ]
+                // loader: "style-loader!css-loader",
             }
         ]
     },
@@ -72,7 +77,8 @@ module.exports = {
                     chunks: 'all'
                 }
             }
-        }
+        },
+        minimizer: [new TerserPlugin({ /* additional options here */ })],
     },
     devtool: 'source-map'
 }

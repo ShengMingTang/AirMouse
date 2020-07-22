@@ -4,7 +4,7 @@ import {
     pushStart as pushStartFromApi, 
     pushEnd as pushEndFromApi,
     pushMore as pushMoreFromApi,
-    bin2Base64,
+    bin2Base64 as bin2Base64FromApi, // #bug
     BLOCK_SIZE
 } from 'api/common.js';
 
@@ -64,14 +64,12 @@ export function onPush(file64, filename){
     };
 }
 function pushMore(file64, seq, offset){
-    const nextSeq = seqBase + (seq + 1) % seqMax;
-    const nextOffset = offset + BLOCK_SIZE;
 
     return (dispatch, getState) => {
         if(offset < file64.length){ // load
-            dispatch(pushProgress(nextSeq, nextOffset));
+            dispatch(pushProgress(seq, offset + BLOCK_SIZE));
             return pushMoreFromApi(file64, seq, offset).then((res) => {
-                dispatch(pushMore(file64, nextSeq, nextOffset));
+                dispatch(pushMore(file64, seqBase + (seq + 1) % seqMax, offset + BLOCK_SIZE));
             }).catch((err) => {
                 dispatch(pushEnd(`Push Err ${err}`));
             });

@@ -1,6 +1,6 @@
 // Standard includes
-#include <app_defines.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // Simplelink includes
@@ -19,7 +19,11 @@
 #include "rom_map.h"
 #include "prcm.h"
 
-//Free_rtos/ti-rtos includes
+// SD host includes
+#include "sdhost.h"
+#include "ff.h"
+
+// Free_rtos/ti-rtos includes
 #include "osi.h"
 
 // common interface includes
@@ -79,15 +83,15 @@ volatile unsigned char g_ucConnectTimeout =0;
 extern OsiSyncObj_t p2pKickStarter;
 extern OsiSyncObj_t httpKickStarter;
 
-OsiLockObj_t pushLock;
-OsiSyncObj_t pushSync;
-StorageFile_t pushFile;
-StorageMsg_t pushMsg;
+extern OsiLockObj_t pushLock;
+extern OsiSyncObj_t pushSync;
+extern StorageFile_t pushFile;
+extern StorageMsg_t pushMsg;
 
-OsiLockObj_t pullLock;
-OsiSyncObj_t pullSync;
-StorageFile_t pullFile;
-StorageMsg_t pullMsg;
+extern OsiLockObj_t pullLock;
+extern OsiSyncObj_t pullSync;
+extern StorageFile_t pullFile;
+extern StorageMsg_t pullMsg;
 
 
 //*****************************************************************************
@@ -133,6 +137,48 @@ void main(void)
     //              Board Routines -- End
     //*****************************************************************************
     
+    //*****************************************************************************
+    //              FatFs -- Start
+    //*****************************************************************************
+
+    //
+    // Set the SD card clock as output pin
+    //
+    MAP_PinDirModeSet(PIN_07,PIN_DIR_MODE_OUT);
+
+    //
+    // Enable Pull up on data
+    //
+    MAP_PinConfigSet(PIN_06,PIN_STRENGTH_4MA, PIN_TYPE_STD_PU);
+
+    //
+    // Enable Pull up on CMD
+    //
+    MAP_PinConfigSet(PIN_08,PIN_STRENGTH_4MA, PIN_TYPE_STD_PU);
+
+    // Enable MMCHS
+    //
+    MAP_PRCMPeripheralClkEnable(PRCM_SDHOST,PRCM_RUN_MODE_CLK);
+
+    //
+    // Reset MMCHS
+    //
+    MAP_PRCMPeripheralReset(PRCM_SDHOST);
+
+    //
+    // Configure MMCHS
+    //
+    MAP_SDHostInit(SDHOST_BASE);
+
+    //
+    // Configure card clock
+    //
+    MAP_SDHostSetExpClk(SDHOST_BASE,
+                            MAP_PRCMPeripheralClockGet(PRCM_SDHOST),15000000);
+
+    //*****************************************************************************
+    //              FatFs -- End
+    //*****************************************************************************
 
     //*****************************************************************************
     //              Tasks -- Start
@@ -180,8 +226,8 @@ void main(void)
 
     //
     // Create Storage Push Task
+    storageFatFsInit();
 
-    // osiRetVal = osi_SyncObjCreate(&pushSync);
     pushFile.offset = 0;
     osiRetVal = osi_LockObjCreate(&pushLock);
     if(osiRetVal != OSI_OK){
@@ -204,6 +250,31 @@ void main(void)
         ERR_PRINT(lRetVal);
         LOOP_FOREVER();
     }
+
+    //
+    // Create Storage Pull Task
+    // pullFile.offset = 0;
+    // osiRetVal = osi_LockObjCreate(&pullLock);
+    // if(osiRetVal != OSI_OK){
+    //     ERR_PRINT(osiRetVal);
+    //     LOOP_FOREVER();
+    // }
+    // osiRetVal = osi_SyncObjCreate(&pullSync);
+    // if(osiRetVal != OSI_OK){
+    //     ERR_PRINT(osiRetVal);
+    //     LOOP_FOREVER();
+    // }
+    // pullMsg.pLock = &pullLock;
+    // pullMsg.pSync = &pullSync;
+    // pullMsg.pFile = &pullFile;
+    // pullMsg.op = STORAGE_OP_INVALID;
+    // lRetVal = osi_TaskCreate(storageControllerTask, (signed char*)"pullController",
+    //     OSI_STACK_SIZE, &pullMsg, OOB_TASK_PRIORITY, NULL
+    // );
+    // if(lRetVal < 0){
+    //     ERR_PRINT(lRetVal);
+    //     LOOP_FOREVER();
+    // }
 
     //*****************************************************************************
     //              Custom Tasks -- End

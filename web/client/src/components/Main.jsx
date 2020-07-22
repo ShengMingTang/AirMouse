@@ -2,11 +2,22 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
-import {Button} from 'reactstrap';
+import {Button, ListGroup, ListGroupItem,
+    Collapse,
+    Navbar,
+    NavbarToggler,
+    NavbarBrand,
+    Nav,
+    NavItem,
+    NavLink,
+    Input,
+    Container,
+} from 'reactstrap';
 
 import FileSelector from 'components/FileSelector.jsx';
+import FileSys from 'components/FileSys.jsx';
 
-import {test as testFromAct} from 'states/main-actions.js';
+import {test as testFromAct, look as lookFromAct} from 'states/main-actions.js';
 
 class Main extends React.Component {
     static propTypes = {
@@ -21,13 +32,16 @@ class Main extends React.Component {
     render(){
         return (
             <div>
+                <Navbar color='faded' light>
+                    <NavbarBrand className='text-danger'>Airmouse</NavbarBrand>
+                </Navbar>
+
+                <FileSys/>
+
+                <Button onClick={this.look}>info.html</Button>
                 <div>
-                    <p>P2P device name    : __SL_G_R.A</p>
-                    <p>P2P device type    : __SL_G_R.B</p>
-                    <p>IP address as STA  : __SL_G_N.A</p>
-                    <p>IP address as AP   : __SL_G_N.P</p>
-                    <p>MAC address        : __SL_G_N.D</p>
-                    <p>Token test         : __SL_G_UXX</p>
+                    {this.props.document ? this.props.document.querySelector('#test').innerHTML : ''}
+                    {typeof(this.props.document)}
                 </div>
                 <Button onClick={this.test}>post test</Button>
                 <p>{this.props.status}</p>

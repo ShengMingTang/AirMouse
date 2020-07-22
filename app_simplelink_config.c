@@ -1,7 +1,6 @@
 // Standard includes
-#include <app_defines.h>
-#include <app_global_variables.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // Simplelink includes
@@ -30,6 +29,10 @@
 
 #include "smartconfig.h"
 #include "pinmux.h"
+
+// custom includes
+#include "app_defines.h"
+#include "app_global_variables.h"
 
 //*****************************************************************************
 // Variable related to Connection status -- End

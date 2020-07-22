@@ -1,14 +1,17 @@
 # FIXED
 
 app_simplelink_config.obj: ../app_simplelink_config.c
-app_simplelink_config.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/app_defines.h
-app_simplelink_config.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/app_global_variables.h
-app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h
-app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../user.h
 app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h
 app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h
 app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h
 app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h
+app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdio.h
+app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h
+app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h
+app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h
+app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h
+app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h
+app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../user.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../cc_pal.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink_extlib/provisioninglib/provisioning_api.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h
@@ -24,9 +27,6 @@ app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/n
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/wlan_rx_filters.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../source/spawn.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h
-app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h
-app_simplelink_config.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h
-app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_ints.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_types.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_memmap.h
@@ -40,18 +40,25 @@ app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/rom_patch.
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/prcm.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/gpio_if.h
 app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/uart_if.h
+app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h
 app_simplelink_config.obj: ../smartconfig.h
 app_simplelink_config.obj: ../pinmux.h
+app_simplelink_config.obj: ../app_defines.h
+app_simplelink_config.obj: ../app_global_variables.h
+app_simplelink_config.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h
 
 ../app_simplelink_config.c: 
-D:/cc3200/cc3200-code/AirMouse_with_cc2541/app_defines.h: 
-D:/cc3200/cc3200-code/AirMouse_with_cc2541/app_global_variables.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../user.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdio.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../user.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../cc_pal.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink_extlib/provisioninglib/provisioning_api.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/simplelink.h: 
@@ -67,9 +74,6 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h:
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/wlan_rx_filters.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/../source/spawn.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h: 
-C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_ints.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_types.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_memmap.h: 
@@ -83,5 +87,9 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/rom_patch.h:
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/prcm.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/gpio_if.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/uart_if.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h: 
 ../smartconfig.h: 
 ../pinmux.h: 
+../app_defines.h: 
+../app_global_variables.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h: 
