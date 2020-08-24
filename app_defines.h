@@ -10,7 +10,7 @@
 #define ROLE_INVALID            (-5)
 
 #define OOB_TASK_PRIORITY               (1)
-#define OSI_STACK_SIZE                  (2048)
+#define OSI_STACK_SIZE                  (2400) // was 2048
 #define SH_GPIO_3                       (3)  /* P58 - Device Mode */
 #define ROLE_INVALID                    (-5)
 #define AUTO_CONNECTION_TIMEOUT_COUNT   (50)   /* 5 Sec */
@@ -76,6 +76,8 @@ typedef enum{
 // storage related
 #define MAX_FILENAME_SIZE 20
 
+#define TRANSFER_BLOCK_SIZE 50
+
 #define PUSH_TOKEN_PREFIX "__SL_P_UZ"
 #define PUSH_START_TOKEN PUSH_TOKEN_PREFIX "0"
 #define PUSH_END_TOKEN PUSH_TOKEN_PREFIX "1"
@@ -94,6 +96,11 @@ typedef enum{
 
 #define READY_TOKEN "Y"
 #define NOT_READT_TOKEN "N"
+
+#define FS_LIST_TOKEN_S "__SL_G_Ua0"
+#define FS_LIST_TOKEN   "__SL_G_Ua"  // list from '/'
+#define FS_STR_MAX_LEN TRANSFER_BLOCK_SIZE*26
+// __SL_G_Uaa ~ __SL_G_Uaz is available
 
 // #define PRINT_ROUTER
 

@@ -52,6 +52,33 @@ main.obj: ../app_simplelink_config.h
 main.obj: ../app_p2p.h
 main.obj: ../app_http_server.h
 main.obj: ../app_storage.h
+main.obj: ../cJSON/cJSON.h
+main.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h
+main.obj: ../app_ap.h
+main.obj: ../ftp/ftp_server.h
+main.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/FreeRTOS.h
+main.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h
+main.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h
+main.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h
+main.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h
+main.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/FreeRTOSConfig.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/projdefs.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/portable.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/deprecated_definitions.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/portable/CCS/ARM_CM3/portmacro.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/mpu_wrappers.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/task.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/list.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/semphr.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/queue.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/event_groups.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/timers.h
+main.obj: ../ftp/ftp_board.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/wlan.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_common_reg.h
+main.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/udma_if.h
 
 ../main.c: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h: 
@@ -105,3 +132,30 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h:
 ../app_p2p.h: 
 ../app_http_server.h: 
 ../app_storage.h: 
+../cJSON/cJSON.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h: 
+../app_ap.h: 
+../ftp/ftp_server.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/FreeRTOS.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/FreeRTOSConfig.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/projdefs.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/portable.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/deprecated_definitions.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/portable/CCS/ARM_CM3/portmacro.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/mpu_wrappers.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/task.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/list.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/semphr.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/queue.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/event_groups.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/timers.h: 
+../ftp/ftp_board.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/wlan.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_common_reg.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/udma_if.h: 

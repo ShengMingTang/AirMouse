@@ -66,7 +66,7 @@ class Node extends React.Component{
                     <Button className="btn-info" onClick={this.handleClick} size="sm">{label}</Button>{' '}
                 </ListGroupItem>
                 {this.state.expanded && children && leaves}
-                {children && addBtn}
+                {children&& addBtn}
             </ListGroup>
         );
     }
@@ -76,14 +76,12 @@ class Node extends React.Component{
             this.setState({expanded: !(this.state.expanded)});
         }
         else{ // leaf, add to pull work
-            const parent = this.props.parent ? this.props.parent : ''
-            this.props.dispatch(onDownload(parent + this.props.label, this.props.url));
+            this.props.dispatch(onDownload(this.props.parent + this.props.label, this.props.url));
         }
     }
 
     handleFileChange(files){
-        const parent = this.props.parent ? this.props.parent : ''
-        this.props.dispatch(onChange(files, parent + this.props.label));
+        this.props.dispatch(onChange(files, this.props.parent + this.props.label));
     }
 }
 

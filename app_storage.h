@@ -3,6 +3,8 @@
 #include "app_defines.h"
 #include "ff.h"
 
+#include "cJSON/cJSON.h"
+
 #define OPEN_FILE_SIZE 4096
 
 #define IS_FILE_HANDLE_VALID(handle) (handle)>=0
@@ -20,6 +22,7 @@ typedef enum{
     STORAGE_OP_WRITE,
     STORAGE_OP_READ,
     STORAGE_OP_CLOSE,
+    STORAGE_OP_LIST,
     STORAGE_OP_INVALID
 }StorageOp_e;
 
@@ -46,12 +49,16 @@ typedef struct
     StorageFile_t *pFile; // manually assign
 }StorageMsg_t;
 
+void processGetToken(SlHttpServerEvent_t *pSlHttpServerEvent, SlHttpServerResponse_t *pSlHttpServerResponse);
+void processPostToken(SlHttpServerEvent_t *pSlHttpServerEvent, SlHttpServerResponse_t *pSlHttpServerResponse);
+
 long storageFatFsInit();
 
+cJSON* listDirectoryInJson(char *path, int depth);
+
 void storageControllerTask(void *pvParameters);
-void listDirectory(DIR *dir);
 long appCreateFile(StorageMsg_t *pMsg);
-long appOpenFile(StorageMsg_t *pMsg, long mode);
+long appOpenFile(StorageMsg_t *pMsg, BYTE mode);
 long appWriteToFile(StorageMsg_t *pMsg);
 long appReadFromeFile(StorageMsg_t *pMsg);
 long appCloseFile(StorageMsg_t *pMsg);

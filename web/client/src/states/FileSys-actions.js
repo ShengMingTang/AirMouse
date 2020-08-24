@@ -1,8 +1,11 @@
 import { func } from 'prop-types';
 
 import {
+    BLOCK_SIZE,
+
     bin2Base64 as bin2Base64FromApi,
     fileReaderHelper as fileReaderHelperFromApi,
+    listCc3200Fs as listCc3200FsFromApi,
 
     pushStart as pushStartFromApi,
     pushMore as pushMoreFromApi,
@@ -25,7 +28,170 @@ import {
 // ************ important **************/
 // remember to switch #debug
 // ************ important **************/
-const debug = 1;
+const debug = 0;
+
+export function listFs(){
+    return (dispatch, getState) => {
+        return listCc3200FsFromApi().then(tree => {
+            dispatch(updateFs(tree));
+        });
+    };
+}
+function updateFs(tree){
+    return {
+        type: '@FILESYS/UPDATE_FS',
+        tree
+    };
+}
+
+/* call flow: 
+    enqueue
+    onChange... -> onLoad... -> addToPushWork [-> deque
+    
+    deque                    pushing
+    -> triggerPushWork... -> onPush...
+                                        -> pushMore
+                                        -> pushClose -> pushEnd -> triggerPushWork
+*/
+
+/* handle file reader and trigger from UI*/
+export function onChange(files, parent){
+    if(files){
+        return (dispatch, getState) => {
+            let prms = [];
+            for(let i = 0; i < files.length; i++){
+                let fullPath = (parent === '/' ? parent : parent + '/') + files[i].name;
+                // fullPath will be truncated to 8.3 fmt
+                prms.push(fileReaderHelperFromApi(fullPath, files[i]));
+            }
+            return Promise.all(prms).then(filePacks => {
+                // [{file64, path}...]
+                dispatch(addToPushWork(filePacks));
+                dispatch(triggerPushWork());
+            }).catch(err => {
+                pushWorkerSet(`File Onchange err with ${err}`);
+            });
+        };
+    }
+}
+export function removeFromPushWork(path){
+    return {
+        type: '@FILESYS/REMOVE_FROM_PUSH_WORK',
+        path
+    };
+}
+export function onCancelPush(path){
+    return pushWorkSet(path, 'canceled');
+}
+
+/* simple action for workers */
+function pushWorkerSet(status){ // set pushWorker to status
+    return {
+        type: '@FILESYS/PUSH_WORKER_SET',
+        status
+    };
+}
+function pushWorkSet(path, status){ // set a work to status
+    return {
+        type: '@FILESYS/PUSH_WORK_SET',
+        path,
+        status,
+    }
+}
+function addToPushWork(filePacks){ // add file to pushWork queue
+    return {
+        type: '@FILESYS/ADD_TO_PUSH_WORK',
+        filePacks: filePacks.map(p => (
+            {...p, status: 'waiting'}
+        ))
+    };
+}
+function pushWorkerGetJob(idx){ // pushWorker will get its job
+    return {
+        type: '@FILESYS/PUSH_WORKER_GET_JOB',
+        workIdx: idx
+    };
+}
+/* composite action for workers */
+function triggerPushWork(){ // pushWorker get a job -> init push(onPush)
+    return (dispatch, getState) => {
+        const {pushWorks} = getState().fileSys;
+        let idx = -1;
+        
+        for(let i = 0; i < pushWorks.length; i++){
+            if(pushWorks[i].status === 'waiting'){
+                idx = i;
+                break;
+            }
+        }
+        if(idx !== -1 && getState().fileSys.pushWorker.status === 'idle'){ // valid
+            dispatch(pushWorkerGetJob(idx));
+            const {file64, path} = getState().fileSys.pushWorker;
+            dispatch(pushWorkSet(path, 'loading'));
+            dispatch(onPush(file64, path));
+        }
+    };
+}
+
+/* actions for pushing in details */
+function onPush(file64, filename){ // trigger a series of push operation
+    return (dispatch, getState) => {
+        return pushStartFromApi(filename).then((res) => {
+            dispatch(pushMore(file64, 0));
+        }).catch((err) => {
+            dispatch(pushWorkerSet(`Push Start failed with ${err}`));
+        });
+    };
+}
+function pushProgress(offset){
+    return {
+        type: '@FILESYS/PUSH_PROGRESS',
+        status: 'pushing',
+        offset,
+    }
+}
+
+function pushMore(file64, offset = 0){
+
+    return (dispatch, getState) => {
+        if(offset < file64.length){ // load
+            return pushMoreFromApi(file64, offset).then((res) => {
+                const {status, offsetNext} = res;
+                dispatch(pushMore(file64, offsetNext));
+                dispatch(pushProgress(offsetNext));
+            }).catch((err) => {
+                dispatch(pushWorkerSet(`Push Err with ${err}`));
+            });
+        }
+        else{ // end
+            dispatch(pushClose(getState().fileSys.pushWorker.path));
+        }
+    };
+}
+function pushClose(filename){
+    return (dispatch, getState) => {
+        return pushEndFromApi(filename).then((res) => {
+            dispatch(pushWorkerSet('idle'));
+            dispatch(pushWorkSet(filename, 'done'));
+            setTimeout(() => {
+                dispatch(triggerPushWork());
+            }, 500);
+        }).catch((err) => {
+            dispatch(pushWorkerSet(`Push Close Err ${err}`));
+        });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 
 /* handle trigger from UI*/
 export function onDownload(path, url){
@@ -53,10 +219,7 @@ export function onRemovePullWork(work){
     };
 }
 export function onCancelPull(path){
-    return {
-        type: '@FILESYS/CANCEL_PULL',
-        path
-    };
+    return pullWorkSet(path, 'canceled');
 }
 
 /* simple action for workers */
@@ -65,6 +228,13 @@ function pullWorkerSet(staus){ // set pullWorker to status
         type: '@FILESYS/PULL_WORKER_SET',
         status
     };
+}
+function pullWorkSet(path, status){ // set a work to status
+    return {
+        type: '@FILESYS/PULL_WORK_SET',
+        path,
+        status,
+    }
 }
 function addToPullWork(path){ // add file to pullWork queue
     return {
@@ -110,7 +280,7 @@ export function onPull(filename){
         return pullStartFromApi(filename).then(res => {
             dispatch(pullMore());
         }).catch((err) => {
-            dispatch(pullWorkerSet('failed'));
+            dispatch(pullWorkerSet(err));
         });
     };
 }
@@ -126,7 +296,7 @@ function pullMore(){
             }
             else{ // end
                 const {file64, filename} = getState().fileSys;
-                dispatch(pullClose());
+                dispatch(pullClose(filename));
             }
         })
     };
@@ -142,6 +312,8 @@ function pullClose(filename){
             
             dispatch(addToCache(path, url));
             dispatch(pullWorkerSet('idle'));
+            dispatch(pullWorkSet(path, 'done'));
+
             (!debug)&&triggerPullWork();
 
         }).catch((err) => {
@@ -151,136 +323,4 @@ function pullClose(filename){
 }
 function addToCache(path, url){ // add url to the node
 
-}
-
-
-/* call flow: 
-    enqueue
-    onChange... -> onLoad... -> addToPushWork [-> deque
-    
-    deque                    pushing
-    -> triggerPushWork... -> onPush...
-                                        -> pushMore
-                                        -> pushClose -> pushEnd -> triggerPushWork
-*/
-
-/* handle file reader and trigger from UI*/
-export function onChange(files, path){
-    if(files){
-        return (dispatch, getState) => {
-            let prms = [];
-            for(let i = 0; i < files.length; i++){
-                let fullPath = (path ? path : '/') + files[i].name;
-                prms.push(fileReaderHelperFromApi(fullPath, files[i]));
-            }
-            return Promise.all(prms).then(filePacks => {
-                // [{file64, path}...]
-                console.log(filePacks);
-                dispatch(addToPushWork(filePacks));
-                (!debug)&&triggerPushWork();
-            }).catch(err => {
-                console.log(err);
-            });
-        };
-        // return (dispatch, getState) => {
-        //     for(let i = 0; i < files.length; i++){
-        //         let reader = new FileReader();
-        //         reader.addEventListener('load', function(filename, e){
-        //             dispatch(onLoad((path ? path : '/') + filename, this.result));
-        //         }.bind(reader, files[i].name));
-        //         reader.readAsBinaryString(files[i]);
-        //     }
-
-        // };
-    }
-}
-export function removeFromPushWork(path){
-    return {
-        type: '@FILESYS/REMOVE_FROM_PUSH_WORK',
-        path
-    };
-}
-export function onCancelPush(path){
-    return {
-        type: '@FILESYS/CANCEL_PUSH',
-        path
-    };
-}
-
-/* simple action for workers */
-function pushWorkerSet(staus){ // set pushWorker to status
-    return {
-        type: '@FILESYS/PUSH_WORKER_SET',
-        status
-    };
-}
-function addToPushWork(filePacks){ // add file to pushWork queue
-    return {
-        type: '@FILESYS/ADD_TO_PUSH_WORK',
-        filePacks: filePacks.map(p => (
-            {...p, status: 'waiting'}
-        ))
-    };
-}
-function pushWorkStart(){ // pushWorker will get its job
-    return {
-        type: '@FILESYS/PUSH_WORK_START',
-    };
-}
-/* composite action for workers */
-function triggerPushWork(){ // pushWorker get a job -> init push(onPush)
-    return (dispatch, getState) => {
-        if(getState().fileSys.pushWorks.length && getState().fileSys.pushWorker.status === 'idle'){
-            dispatch(pushWorkStart());
-            const file64 = getState().fileSys.pushWorker.file64;
-            const path = getState().fileSys.pushWorker.path;
-            dispatch(onPush(file64, path));
-        }
-    };
-}
-
-/* actions for pushing in details */
-function onPush(file64, filename){ // trigger a series of push operation
-    return (dispatch, getState) => {
-        return pushStartFromApi(filename).then((res) => {
-            dispatch(pushMore(file64, 0, 0));
-        }).catch(() => {
-            dispatch(pushWorkerSet('fail'));
-        });
-    };
-}
-function pushProgress(seq, offset){
-    return {
-        type: '@FILESYS/PUSH_PROGRESS',
-        status: 'pushing',
-        seq,
-        offset,
-    }
-}
-
-function pushMore(file64, seq, offset){
-
-    return (dispatch, getState) => {
-        if(offset < file64.length){ // load
-            dispatch(pushProgress(seq, offset + BLOCK_SIZE));
-            return pushMoreFromApi(file64, seq, offset).then((res) => {
-                dispatch(pushMore(file64, seqBase + (seq + 1) % seqMax, offset + BLOCK_SIZE));
-            }).catch((err) => {
-                dispatch(pushWorkerSet(`Push Err ${err}`));
-            });
-        }
-        else{ // end
-            dispatch(pushClose(getState().filename));
-        }
-    };
-}
-function pushClose(filename){
-    return (dispatch, getState) => {
-        return pushEndFromApi(filename).then((res) => {
-            dispatch(pushWorkerSet('idle'));
-            triggerPushWork();
-        }).catch((err) => {
-            dispatch(pushWorkerSet(`Push Close Err ${err}`));
-        });
-    }
 }

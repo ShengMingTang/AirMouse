@@ -2,7 +2,7 @@ import React from 'react';
 
 import axios from 'axios';
 import { off } from 'process';
-import { func } from 'prop-types';
+import { func, object } from 'prop-types';
 import { parse } from 'path';
 const qs = require('querystring');
 
@@ -22,7 +22,7 @@ const getConfig = {
 }
 
 
-export const BLOCK_SIZE = 20;
+export const BLOCK_SIZE = 50;
 
 // #tested base64 <-> blob
 function base64ToArrayBuffer(base64){
@@ -49,10 +49,56 @@ export function fileReaderHelper(path, file){
     return new Promise((resolve, reject) => {
         let reader = new FileReader();
         reader.addEventListener('load', () => {
-            resolve({file64: bin2Base64(reader.result), path});
+            let retPath = path.slice();
+            let route = retPath.split('/');
+            let filename = route[route.length - 1];
+            let comp = filename.split('.');
+            filename = `${comp[0].slice(0, 8)}.${comp[1].slice(0, 3)}`;
+            route[route.length - 1] = filename;
+            retPath = route.join('/');
+            resolve({file64: bin2Base64(reader.result), path: retPath});
         });
         reader.readAsBinaryString(file);
     })
+}
+export function listCc3200Fs(){
+    return getDOM('/fs.html').then(doc => {
+        const fsStr = doc.querySelector('#fs').innerHTML;
+        const tree = JSON.parse(fsStr);
+        return cc3200FsToFileSys(tree);
+    }).catch(err => {
+        return cc3200FsToFileSys({l:'/', c: [{l:'temp', c:[{l:'a.txt'}]}  ]})
+    });
+}
+
+function cc3200FsToFileSys(obj, parent = ''){
+    /*
+        [
+            {
+                label: '/',
+                children: [
+                    {
+                        label: 'temp/',
+                        children: [
+                            {
+                                label: 'a.txt',
+                            },
+                        ]
+                    },
+                    {
+                        label: 'small.txt',
+                    }
+                ]
+            }
+        ]
+    */
+   return {
+       label: obj.l,
+       parent,
+       children: ('c' in obj) ? obj.c.map( p => (
+           cc3200FsToFileSys(p, parent + obj.l + (obj.l === '/' ? '' : '/'))) 
+        ) : null
+   };
 }
 
 // currently we support one thread for push, one thread for pull
@@ -82,9 +128,26 @@ export function postTest(){
         return res.status;
     });
 }
-export function getDOM(url){
-    return axios.get(url,qs.stringify({
-    }), getConfig).then(res => {
+export function lookTest(){
+    return getDOM('fs.html').then(doc => {
+        return doc.querySelector('#fs').innerHTML;
+    }).catch(err => {
+        return err;
+    });
+    // return axios.get('/fs.html', qs.stringify({}), getConfig).then(function(res){
+    //     if(res.status < 200 || res.status > 299){
+    //         throw new Error(`Unexpected Error ${res.status}`);
+    //     }
+    //     // res should be raw html
+    //     let parser = new DOMParser();
+    //     let html = parser.parseFromString(res.data, 'text/html');
+    //     return html.querySelector('#test').innerHTML;
+    // }).catch(err => {
+    //     return err;
+    // });
+}
+function getDOM(url, params = {}){
+    return axios.get(url,qs.stringify(params), getConfig).then(res => {
         if(res.status < 200 || res.status > 299){
             throw new Error(`Unexpected Error ${res.status}`);
         }
@@ -103,17 +166,38 @@ export function pushStart(filename){
         return res.status;
     });
 }
-export function pushMore(file64, seq, offset){
-    const data = `__SL_P_U${seq.toString().padStart(2, '0')}`;
+export function pushMore(file64, offset){
+    // const data = `__SL_P_U${seq.toString().padStart(2, '0')}`;
 
-    return axios.post('/', qs.stringify({
-        [data]: file64.slice(offset, offset + BLOCK_SIZE),
-    }), postConfig).then(function(res){
+    // return axios.post('/', qs.stringify({
+    //     [data]: file64.slice(offset, offset + BLOCK_SIZE),
+    // }), postConfig).then(function(res){
+    //     if(res.status < 200 || res.status > 299){
+    //         throw new Error(`Unexpected Error ${res.status}`);
+    //     }
+    //     return res.status;
+    // });
+
+    const batchSize = 100;
+    let params = {};
+    let i = 0;
+    while( (i < batchSize) && (offset + BLOCK_SIZE * i < file64.length) ){
+        params[`__SL_P_U${i.toString().padStart(2, '0')}`] = 
+            file64.slice(offset + BLOCK_SIZE * i, offset + BLOCK_SIZE * (i + 1));
+        i++;
+    }
+    return axios.post('/', qs.stringify(
+        params
+    ), postConfig).then((res) => {
         if(res.status < 200 || res.status > 299){
             throw new Error(`Unexpected Error ${res.status}`);
         }
-        return res.status;
+        return {
+            status: res.status,
+            offsetNext: offset + BLOCK_SIZE * i
+        };
     });
+
 }
 export function pushEnd(filename){
     return axios.post('/', qs.stringify({

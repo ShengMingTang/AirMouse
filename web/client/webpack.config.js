@@ -8,7 +8,8 @@ const distPath = path.resolve(__dirname, 'dist');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
-    mode: 'development',
+    // mode: 'development',
+    mode: 'production',
     context: srcPath,
     resolve: {
         alias: {

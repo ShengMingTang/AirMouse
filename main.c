@@ -40,6 +40,9 @@
 #include "app_p2p.h"
 #include "app_http_server.h"
 #include "app_storage.h"
+#include "app_ap.h"
+
+#include "ftp/ftp_server.h"
 
 //*****************************************************************************
 //                 GLOBAL VARIABLES -- Start
@@ -83,14 +86,6 @@ volatile unsigned char g_ucConnectTimeout =0;
 extern OsiSyncObj_t p2pKickStarter;
 extern OsiSyncObj_t httpKickStarter;
 
-extern OsiLockObj_t pushLock;
-extern OsiSyncObj_t pushSync;
-extern StorageFile_t pushFile;
-extern StorageMsg_t pushMsg;
-
-extern OsiLockObj_t pullLock;
-extern OsiSyncObj_t pullSync;
-extern StorageFile_t pullFile;
 extern StorageMsg_t pullMsg;
 
 
@@ -194,8 +189,8 @@ void main(void)
         LOOP_FOREVER();
     }
     
-    //
-    // Create p2p(connection) management Task
+    // //
+    // // Create p2p(connection) management Task
     osiRetVal = osi_SyncObjCreate(&p2pKickStarter);
     if(osiRetVal != OSI_OK){
         ERR_PRINT(osiRetVal);
@@ -204,19 +199,26 @@ void main(void)
     lRetVal = osi_TaskCreate(P2PManagerTask, (signed char*)"P2PManagerTask",
         OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
     );
-    if(lRetVal < 0){
-        ERR_PRINT(lRetVal);
-        LOOP_FOREVER();
-    }
 
     //
     // Create HTTP Server Task
-    osiRetVal = osi_SyncObjCreate(&httpKickStarter);
-    if(osiRetVal != OSI_OK){
-        ERR_PRINT(osiRetVal);
-        LOOP_FOREVER();
-    }
-    lRetVal = osi_TaskCreate(HTTPServerTask, (signed char*)"httpServer",
+    // osiRetVal = osi_SyncObjCreate(&httpKickStarter);
+    // if(osiRetVal != OSI_OK){
+    //     ERR_PRINT(osiRetVal);
+    //     LOOP_FOREVER();
+    // }
+    // lRetVal = osi_TaskCreate(HTTPServerTask, (signed char*)"httpServer",
+    //     OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+    // );
+    // if(lRetVal < 0){
+    //     ERR_PRINT(lRetVal);
+    //     LOOP_FOREVER();
+    // }
+
+    //
+    // Init and Create Storage Tasks
+
+    lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"ftpServer",
         OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
     );
     if(lRetVal < 0){
@@ -224,57 +226,6 @@ void main(void)
         LOOP_FOREVER();
     }
 
-    //
-    // Create Storage Push Task
-    storageFatFsInit();
-
-    pushFile.offset = 0;
-    osiRetVal = osi_LockObjCreate(&pushLock);
-    if(osiRetVal != OSI_OK){
-        ERR_PRINT(osiRetVal);
-        LOOP_FOREVER();
-    }
-    osiRetVal = osi_SyncObjCreate(&pushSync);
-    if(osiRetVal != OSI_OK){
-        ERR_PRINT(osiRetVal);
-        LOOP_FOREVER();
-    }
-    pushMsg.pLock = &pushLock;
-    pushMsg.pSync = &pushSync;
-    pushMsg.pFile = &pushFile;
-    pushMsg.op = STORAGE_OP_INVALID;
-    lRetVal = osi_TaskCreate(storageControllerTask, (signed char*)"pushController",
-        OSI_STACK_SIZE, &pushMsg, OOB_TASK_PRIORITY, NULL
-    );
-    if(lRetVal < 0){
-        ERR_PRINT(lRetVal);
-        LOOP_FOREVER();
-    }
-
-    //
-    // Create Storage Pull Task
-    // pullFile.offset = 0;
-    // osiRetVal = osi_LockObjCreate(&pullLock);
-    // if(osiRetVal != OSI_OK){
-    //     ERR_PRINT(osiRetVal);
-    //     LOOP_FOREVER();
-    // }
-    // osiRetVal = osi_SyncObjCreate(&pullSync);
-    // if(osiRetVal != OSI_OK){
-    //     ERR_PRINT(osiRetVal);
-    //     LOOP_FOREVER();
-    // }
-    // pullMsg.pLock = &pullLock;
-    // pullMsg.pSync = &pullSync;
-    // pullMsg.pFile = &pullFile;
-    // pullMsg.op = STORAGE_OP_INVALID;
-    // lRetVal = osi_TaskCreate(storageControllerTask, (signed char*)"pullController",
-    //     OSI_STACK_SIZE, &pullMsg, OOB_TASK_PRIORITY, NULL
-    // );
-    // if(lRetVal < 0){
-    //     ERR_PRINT(lRetVal);
-    //     LOOP_FOREVER();
-    // }
 
     //*****************************************************************************
     //              Custom Tasks -- End

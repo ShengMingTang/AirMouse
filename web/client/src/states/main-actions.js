@@ -1,4 +1,4 @@
-import {postTest, lookTest} from 'api/common.js';
+import {postTest, lookTest as lookTestFromApi} from 'api/common.js';
 
 function status(sts){
     console.log(sts);
@@ -16,5 +16,15 @@ export function test(){
             dispatch(status(err.toString()));
         });
         // dispatch(status(getState().main.test))
+    };
+}
+
+export function look(){
+    return (dispatch, getState) => {
+        return lookTestFromApi().then(res => {
+            dispatch(status(res.toString()));
+        }).catch(err => {
+            dispatch(status(err.toString()));
+        });
     };
 }

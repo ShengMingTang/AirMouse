@@ -28,6 +28,7 @@ class Main extends React.Component {
     constructor(props){
         super(props);
         this.test = this.test.bind(this);
+        this.look = this.look.bind(this);
     }
     render(){
         return (
@@ -38,7 +39,7 @@ class Main extends React.Component {
 
                 <FileSys/>
 
-                <Button onClick={this.look}>info.html</Button>
+                <Button onClick={this.look}>fs.html</Button>
                 <div>
                     {this.props.document ? this.props.document.querySelector('#test').innerHTML : ''}
                     {typeof(this.props.document)}
@@ -50,6 +51,9 @@ class Main extends React.Component {
                 </div>
             </div>
         );
+    }
+    look(){
+        this.props.dispatch(lookFromAct());
     }
     test(){
         this.props.dispatch(testFromAct());

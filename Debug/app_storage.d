@@ -47,6 +47,8 @@ app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/uart_if.h
 app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h
 app_storage.obj: ../smartconfig.h
 app_storage.obj: ../pinmux.h
+app_storage.obj: ../cJSON/cJSON.h
+app_storage.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h
 app_storage.obj: ../app_global_variables.h
 app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h
 app_storage.obj: ../app_defines.h
@@ -100,6 +102,8 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/uart_if.h:
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h: 
 ../smartconfig.h: 
 ../pinmux.h: 
+../cJSON/cJSON.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h: 
 ../app_global_variables.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h: 
 ../app_defines.h: 

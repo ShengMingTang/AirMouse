@@ -8,6 +8,8 @@ import Node from 'components/Node.jsx';
 import {onSelectNode as onSelectNodeFromApi} from 'api/common.js';
 
 import {
+    listFs,
+
     removeFromPushWork,
     removeFromPullWork,
 
@@ -31,6 +33,10 @@ class FileSys extends React.Component{
         this.pull = this.pull.bind(this);
     }
 
+    componentWillMount(){
+        this.props.dispatch(listFs());
+    }
+
     render(){
         const genPushWorkItem = (p, idx) => {
             const {path, file64, status} = p;
@@ -43,10 +49,10 @@ class FileSys extends React.Component{
                         {/* { (status === 'loading' || status === 'waiting')
                             && <Button className="btn-warning">Pause</Button>} */}
                         { (status === 'waiting')
-                            && <Button className="btn-danger" onClick={() => {this.handleCancelPush(path)}}>Cancel</Button>}
+                            && <Button className="btn-danger" onClick={() => {this.handleCancelPush(path, idx)}}>Cancel</Button>}
                         { (status === 'canceled')
-                            && <Button className="btn-success" onClick={() => {this.handleRemovePushWork(path)}}>Canceled</Button>}
-                        {status === 'done' && <Button className="btn-success" onClick={() => {this.handleRemovePushWork(path)}}>Done</Button>}
+                            && <Button className="btn-success" onClick={() => {this.handleRemovePushWork(path, idx)}}>Canceled</Button>}
+                        {status === 'done' && <Button className="btn-success" onClick={() => {this.handleRemovePushWork(path, idx)}}>Done</Button>}
 
                     </ButtonGroup>
                 </ListGroupItem>
@@ -63,10 +69,10 @@ class FileSys extends React.Component{
                         {/* { (status === 'loading' || status === 'waiting')
                             && <Button className="btn-warning" key="2">Pause</Button>} */}
                         { (status === 'waiting')
-                            && <Button className="btn-danger" key="3" onClick={() => {this.handleCancelPull(path)}}>Cancel</Button>}
+                            && <Button className="btn-danger" key="3" onClick={() => {this.handleCancelPull(path, idx)}}>Cancel</Button>}
                         { (status === 'canceled')
-                            && <Button className="btn-success" key="4" onClick={() => {this.handleRemovePullWork(path)}}>Canceled</Button>}
-                        {status === 'done' && <Button className="btn-success" key="4" onClick={() => {this.handleRemovePullWork(path)}}>Done</Button>}
+                            && <Button className="btn-success" key="4" onClick={() => {this.handleRemovePullWork(path, idx)}}>Canceled</Button>}
+                        {status === 'done' && <Button className="btn-success" key="4" onClick={() => {this.handleRemovePullWork(path, idx)}}>Done</Button>}
 
                     </ButtonGroup>
                 </ListGroupItem>
@@ -79,15 +85,15 @@ class FileSys extends React.Component{
         <div style={{ width: '50%', flexGrow: 1, 'marginLeft': 'auto', 'marginRight': 'auto'}}>
             <div>
                 {/* <Tree nodes={this.props.tree} grow onSelect={onSelectNodeFromApi}/> */}
-                <Node {...this.props.tree[0]}/>
+                <Node {...this.props.tree}/>
             </div>
-
+            {this.props.tree.toString()}
             <ListGroup size="sm" style={{'marginTop':50}}>
-                Push Works
+                Push Works {this.props.pushWorker.path} {this.props.pushWorker.status} {this.props.pushWorker.offset}/{this.props.pushWorker.file64.length}
                 {pushWorks}
             </ListGroup>
             <ListGroup size="sm" style={{'marginTop':50}}>
-                Pull Works
+                Pull Works {this.props.pullWorker.status}
                 {pullWorks}
             </ListGroup>
             <div>
@@ -97,11 +103,11 @@ class FileSys extends React.Component{
         );
     }
     
-    handleCancelPush(path){
-        this.props.dispatch(onCancelPush(path));
+    handleCancelPush(path, idx){
+        this.props.dispatch(onCancelPush(path, idx));
     }
-    handleCancelPull(path){
-        this.props.dispatch(onCancelPull(path));
+    handleCancelPull(path, idx){
+        this.props.dispatch(onCancelPull(path, idx));
     }
 
     handleRemovePushWork(path){

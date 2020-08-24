@@ -9,6 +9,7 @@ CMD_SRCS += \
 ../cc3200v1p32.cmd 
 
 C_SRCS += \
+../app_ap.c \
 ../app_freertos_handler.c \
 ../app_http_server.c \
 ../app_p2p.c \
@@ -25,6 +26,7 @@ C_SRCS += \
 ../uart_if.c 
 
 C_DEPS += \
+./app_ap.d \
 ./app_freertos_handler.d \
 ./app_http_server.d \
 ./app_p2p.d \
@@ -41,6 +43,7 @@ C_DEPS += \
 ./uart_if.d 
 
 OBJS += \
+./app_ap.obj \
 ./app_freertos_handler.obj \
 ./app_http_server.obj \
 ./app_p2p.obj \
@@ -57,6 +60,7 @@ OBJS += \
 ./uart_if.obj 
 
 OBJS__QUOTED += \
+"app_ap.obj" \
 "app_freertos_handler.obj" \
 "app_http_server.obj" \
 "app_p2p.obj" \
@@ -73,6 +77,7 @@ OBJS__QUOTED += \
 "uart_if.obj" 
 
 C_DEPS__QUOTED += \
+"app_ap.d" \
 "app_freertos_handler.d" \
 "app_http_server.d" \
 "app_p2p.d" \
@@ -89,6 +94,7 @@ C_DEPS__QUOTED += \
 "uart_if.d" 
 
 C_SRCS__QUOTED += \
+"../app_ap.c" \
 "../app_freertos_handler.c" \
 "../app_http_server.c" \
 "../app_p2p.c" \

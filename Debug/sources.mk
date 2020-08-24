@@ -113,5 +113,6 @@ PDE_DEPS__QUOTED :=
 SUBDIRS := \
 . \
 cJSON \
+ftp \
 web/server/node_modules/term-size/vendor/windows \
 
