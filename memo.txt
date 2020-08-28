@@ -1,0 +1,5 @@
+${CC3200_SDK_ROOT}/third_party/fatfs/src
+should be added if fatfs "default mode" is used
+
+${CC3200_SDK_ROOT}/third_party/fatfs/ccs/Release/fatfs.a
+should be added if fatfs "default mode" is used
