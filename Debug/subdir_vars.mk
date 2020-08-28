@@ -16,7 +16,6 @@ C_SRCS += \
 ../app_simpleLink_handlers.c \
 ../app_simplelink_config.c \
 ../app_storage.c \
-../diskio.c \
 ../gpio_if.c \
 ../main.c \
 ../network_common.c \
@@ -33,7 +32,6 @@ C_DEPS += \
 ./app_simpleLink_handlers.d \
 ./app_simplelink_config.d \
 ./app_storage.d \
-./diskio.d \
 ./gpio_if.d \
 ./main.d \
 ./network_common.d \
@@ -50,7 +48,6 @@ OBJS += \
 ./app_simpleLink_handlers.obj \
 ./app_simplelink_config.obj \
 ./app_storage.obj \
-./diskio.obj \
 ./gpio_if.obj \
 ./main.obj \
 ./network_common.obj \
@@ -67,7 +64,6 @@ OBJS__QUOTED += \
 "app_simpleLink_handlers.obj" \
 "app_simplelink_config.obj" \
 "app_storage.obj" \
-"diskio.obj" \
 "gpio_if.obj" \
 "main.obj" \
 "network_common.obj" \
@@ -84,7 +80,6 @@ C_DEPS__QUOTED += \
 "app_simpleLink_handlers.d" \
 "app_simplelink_config.d" \
 "app_storage.d" \
-"diskio.d" \
 "gpio_if.d" \
 "main.d" \
 "network_common.d" \
@@ -101,7 +96,6 @@ C_SRCS__QUOTED += \
 "../app_simpleLink_handlers.c" \
 "../app_simplelink_config.c" \
 "../app_storage.c" \
-"../diskio.c" \
 "../gpio_if.c" \
 "../main.c" \
 "../network_common.c" \

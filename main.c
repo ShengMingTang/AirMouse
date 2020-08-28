@@ -42,8 +42,7 @@
 #include "app_storage.h"
 #include "app_ap.h"
 
-#include "ftp/ftp_server.h"
-
+#define SDHOST_CLK_SPEED 24000000
 //*****************************************************************************
 //                 GLOBAL VARIABLES -- Start
 //*****************************************************************************
@@ -169,7 +168,7 @@ void main(void)
     // Configure card clock
     //
     MAP_SDHostSetExpClk(SDHOST_BASE,
-                            MAP_PRCMPeripheralClockGet(PRCM_SDHOST),15000000);
+                            MAP_PRCMPeripheralClockGet(PRCM_SDHOST),SDHOST_CLK_SPEED);
 
     //*****************************************************************************
     //              FatFs -- End
@@ -217,16 +216,6 @@ void main(void)
 
     //
     // Init and Create Storage Tasks
-
-    lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"ftpServer",
-        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
-    );
-    if(lRetVal < 0){
-        ERR_PRINT(lRetVal);
-        LOOP_FOREVER();
-    }
-
-
     //*****************************************************************************
     //              Custom Tasks -- End
     //*****************************************************************************

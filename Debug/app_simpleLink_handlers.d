@@ -47,9 +47,9 @@ app_simpleLink_handlers.obj: ../app_global_variables.h
 app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h
 app_simpleLink_handlers.obj: ../app_defines.h
 app_simpleLink_handlers.obj: ../app_storage.h
-app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ff.h
-app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/integer.h
-app_simpleLink_handlers.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ffconf.h
+app_simpleLink_handlers.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ff.h
+app_simpleLink_handlers.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/integer.h
+app_simpleLink_handlers.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ffconf.h
 app_simpleLink_handlers.obj: ../cJSON/cJSON.h
 app_simpleLink_handlers.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h
 
@@ -100,8 +100,8 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h:
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h: 
 ../app_defines.h: 
 ../app_storage.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ff.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/integer.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ffconf.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ff.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/integer.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ffconf.h: 
 ../cJSON/cJSON.h: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h: 

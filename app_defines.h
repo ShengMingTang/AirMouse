@@ -10,7 +10,7 @@
 #define ROLE_INVALID            (-5)
 
 #define OOB_TASK_PRIORITY               (1)
-#define OSI_STACK_SIZE                  (2400) // was 2048
+#define OSI_STACK_SIZE                  (1024) // was 2048
 #define SH_GPIO_3                       (3)  /* P58 - Device Mode */
 #define ROLE_INVALID                    (-5)
 #define AUTO_CONNECTION_TIMEOUT_COUNT   (50)   /* 5 Sec */

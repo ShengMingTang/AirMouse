@@ -112,7 +112,9 @@ PDE_DEPS__QUOTED :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 . \
+FreeRTOS \
 cJSON \
+fatfs \
 ftp \
 web/server/node_modules/term-size/vendor/windows \
 

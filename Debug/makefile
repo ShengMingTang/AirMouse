@@ -17,7 +17,6 @@ ORDERED_OBJS += \
 "./app_simpleLink_handlers.obj" \
 "./app_simplelink_config.obj" \
 "./app_storage.obj" \
-"./diskio.obj" \
 "./gpio_if.obj" \
 "./main.obj" \
 "./network_common.obj" \
@@ -25,13 +24,18 @@ ORDERED_OBJS += \
 "./smart_config.obj" \
 "./startup_ccs.obj" \
 "./uart_if.obj" \
+"./FreeRTOS/event_groups.obj" \
 "./cJSON/cJSON.obj" \
 "./cJSON/cJSON_Utils.obj" \
+"./fatfs/diskio.obj" \
+"./fatfs/ff.obj" \
+"./fatfs/ffsystem.obj" \
+"./fatfs/ffunicode.obj" \
 "./ftp/ftp_server.obj" \
+"./ftp/ftp_storage.obj" \
 "../cc3200v1p32.cmd" \
 $(GEN_CMDS__FLAG) \
 -l"C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/ccs/OS_debug/simplelink.a" \
--l"C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/ccs/Release/fatfs.a" \
 -l"C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/ccs/Release/driverlib.a" \
 -l"C:/ti/CC3200SDK_1.5.0/cc3200-sdk/oslib/ccs/free_rtos/free_rtos.a" \
 -l"C:/ti/CC3200SDK_1.5.0/cc3200-sdk/netapps/http/client/ccs/HTTPClientMinLib/webclient.a" \
@@ -45,11 +49,15 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
+-include FreeRTOS/subdir_vars.mk
 -include cJSON/subdir_vars.mk
+-include fatfs/subdir_vars.mk
 -include ftp/subdir_vars.mk
 -include web/server/node_modules/term-size/vendor/windows/subdir_vars.mk
 -include subdir_rules.mk
+-include FreeRTOS/subdir_rules.mk
 -include cJSON/subdir_rules.mk
+-include fatfs/subdir_rules.mk
 -include ftp/subdir_rules.mk
 -include web/server/node_modules/term-size/vendor/windows/subdir_rules.mk
 -include objects.mk
@@ -182,8 +190,8 @@ AirMouse_with_cc2541.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "app_ap.obj" "app_freertos_handler.obj" "app_http_server.obj" "app_p2p.obj" "app_simpleLink_handlers.obj" "app_simplelink_config.obj" "app_storage.obj" "diskio.obj" "gpio_if.obj" "main.obj" "network_common.obj" "pinmux.obj" "smart_config.obj" "startup_ccs.obj" "uart_if.obj" "cJSON\cJSON.obj" "cJSON\cJSON_Utils.obj" "ftp\ftp_server.obj" 
-	-$(RM) "app_ap.d" "app_freertos_handler.d" "app_http_server.d" "app_p2p.d" "app_simpleLink_handlers.d" "app_simplelink_config.d" "app_storage.d" "diskio.d" "gpio_if.d" "main.d" "network_common.d" "pinmux.d" "smart_config.d" "startup_ccs.d" "uart_if.d" "cJSON\cJSON.d" "cJSON\cJSON_Utils.d" "ftp\ftp_server.d" 
+	-$(RM) "app_ap.obj" "app_freertos_handler.obj" "app_http_server.obj" "app_p2p.obj" "app_simpleLink_handlers.obj" "app_simplelink_config.obj" "app_storage.obj" "gpio_if.obj" "main.obj" "network_common.obj" "pinmux.obj" "smart_config.obj" "startup_ccs.obj" "uart_if.obj" "FreeRTOS\event_groups.obj" "cJSON\cJSON.obj" "cJSON\cJSON_Utils.obj" "fatfs\diskio.obj" "fatfs\ff.obj" "fatfs\ffsystem.obj" "fatfs\ffunicode.obj" "ftp\ftp_server.obj" "ftp\ftp_storage.obj" 
+	-$(RM) "app_ap.d" "app_freertos_handler.d" "app_http_server.d" "app_p2p.d" "app_simpleLink_handlers.d" "app_simplelink_config.d" "app_storage.d" "gpio_if.d" "main.d" "network_common.d" "pinmux.d" "smart_config.d" "startup_ccs.d" "uart_if.d" "FreeRTOS\event_groups.d" "cJSON\cJSON.d" "cJSON\cJSON_Utils.d" "fatfs\diskio.d" "fatfs\ff.d" "fatfs\ffsystem.d" "fatfs\ffunicode.d" "ftp\ftp_server.d" "ftp\ftp_storage.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

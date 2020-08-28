@@ -48,6 +48,35 @@ app_p2p.obj: ../app_global_variables.h
 app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h
 app_p2p.obj: ../app_simplelink_config.h
 app_p2p.obj: ../app_p2p.h
+app_p2p.obj: ../ftp/ftp_server.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/FreeRTOS.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h
+app_p2p.obj: C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/FreeRTOSConfig.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/projdefs.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/portable.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/deprecated_definitions.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/portable/CCS/ARM_CM3/portmacro.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/mpu_wrappers.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/task.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/list.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/semphr.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/queue.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/event_groups.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/timers.h
+app_p2p.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ff.h
+app_p2p.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/integer.h
+app_p2p.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ffconf.h
+app_p2p.obj: ../ftp/ftp_board.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/wlan.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_common_reg.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/sdhost.h
+app_p2p.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/udma_if.h
 
 ../app_p2p.c: 
 C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h: 
@@ -97,3 +126,32 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h:
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/netcfg.h: 
 ../app_simplelink_config.h: 
 ../app_p2p.h: 
+../ftp/ftp_server.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdlib.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/FreeRTOS.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h: 
+C:/ti/ccs930/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/FreeRTOSConfig.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/projdefs.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/portable.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/deprecated_definitions.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/portable/CCS/ARM_CM3/portmacro.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/mpu_wrappers.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/task.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/list.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/semphr.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/queue.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/event_groups.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/FreeRTOS/source/include/timers.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ff.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/integer.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ffconf.h: 
+../ftp/ftp_board.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/simplelink/include/wlan.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/inc/hw_common_reg.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/sdhost.h: 
+C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/udma_if.h: 

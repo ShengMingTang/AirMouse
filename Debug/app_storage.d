@@ -39,9 +39,9 @@ app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/rom_map.h
 app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/rom_patch.h
 app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/prcm.h
 app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/sdhost.h
-app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ff.h
-app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/integer.h
-app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ffconf.h
+app_storage.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ff.h
+app_storage.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/integer.h
+app_storage.obj: D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ffconf.h
 app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/gpio_if.h
 app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/uart_if.h
 app_storage.obj: C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h
@@ -94,9 +94,9 @@ C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/rom_map.h:
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/rom_patch.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/prcm.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/driverlib/sdhost.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ff.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/integer.h: 
-C:/ti/CC3200SDK_1.5.0/cc3200-sdk/third_party/fatfs/src/ffconf.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ff.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/integer.h: 
+D:/cc3200/cc3200-code/AirMouse_with_cc2541/fatfs/ffconf.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/gpio_if.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/uart_if.h: 
 C:/ti/CC3200SDK_1.5.0/cc3200-sdk/example/common/common.h: 

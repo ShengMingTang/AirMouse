@@ -1,6 +1,10 @@
 eclipse.preferences.version=1
+encoding//Debug/FreeRTOS/subdir_rules.mk=UTF-8
+encoding//Debug/FreeRTOS/subdir_vars.mk=UTF-8
 encoding//Debug/cJSON/subdir_rules.mk=UTF-8
 encoding//Debug/cJSON/subdir_vars.mk=UTF-8
+encoding//Debug/fatfs/subdir_rules.mk=UTF-8
+encoding//Debug/fatfs/subdir_vars.mk=UTF-8
 encoding//Debug/ftp/subdir_rules.mk=UTF-8
 encoding//Debug/ftp/subdir_vars.mk=UTF-8
 encoding//Debug/makefile=UTF-8
