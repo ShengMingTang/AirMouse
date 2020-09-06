@@ -8,7 +8,7 @@
 / Functions and Buffer Configurations
 /---------------------------------------------------------------------------*/
 
-#define	_FS_TINY		0 // was 0
+#define	_FS_TINY		1 // was 0
 /* This option switches tiny buffer configuration. (0:Normal or 1:Tiny)
 /  At the tiny configuration, size of the file object (FIL) is reduced _MAX_SS
 /  bytes. Instead of private sector buffer eliminated from the file object,
@@ -56,7 +56,7 @@
 /  (0:Disable or 1:Enable) */
 
 
-#define	_USE_FORWARD	0 // was 0
+#define	_USE_FORWARD	1 // was 0
 /* This option switches f_forward() function. (0:Disable or 1:Enable) */
 /* To enable it, also _FS_TINY need to be set to 1. */
 
