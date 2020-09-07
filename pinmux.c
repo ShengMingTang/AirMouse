@@ -111,4 +111,16 @@ PinMuxConfig(void)
     // Configure PIN_08 for SDHOST0 SDHost_CMD
     //
     MAP_PinTypeSDHost(PIN_08, PIN_MODE_8);
+
+    /* i2c */
+    MAP_PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK);
+    //
+    // Configure PIN_01 for I2C0 I2C_SCL
+    //
+    MAP_PinTypeI2C(PIN_01, PIN_MODE_1);
+
+    //
+    // Configure PIN_02 for I2C0 I2C_SDA
+    //
+    MAP_PinTypeI2C(PIN_02, PIN_MODE_1);
 }

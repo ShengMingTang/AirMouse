@@ -31,11 +31,15 @@
 #include "pinmux.h"
 
 // app includes
+#include <FreeRTOS.h>
+#include <projdefs.h>
+#include <task.h>
+#include <semphr.h>
+// FreeRTOS includes
 #include "app_global_variables.h"
 #include "app_storage.h"
 
 extern OsiSyncObj_t p2pKickStarter;
-
 //*****************************************************************************
 // SimpleLink Asynchronous Event Handlers -- Start
 //*****************************************************************************
@@ -139,8 +143,7 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
             //
             // slPeerInfoAsyncResponse_t *pEventData = NULL;
             // pEventData = &pWlanEvent->EventData.APModeStaConnected;
-            //
-
+            UART_PRINT("[WLAN EVENT] STAT CONNECTED\n\r");
         }
         break;
 
@@ -158,6 +161,7 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
             // slPeerInfoAsyncResponse_t *pEventData = NULL;
             // pEventData = &pWlanEvent->EventData.APModestaDisconnected;
             //
+            UART_PRINT("[WLAN EVENT] STAT DISCONNECTED\n\r");
         }
         break;
 
@@ -276,8 +280,8 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
 
             //Gateway IP address
             g_ulGatewayIP = pEventData->gateway;
-
-            /*UART_PRINT("[NETAPP EVENT] IP Acquired: IP=%d.%d.%d.%d , "
+            
+            UART_PRINT("[NETAPP EVENT] IP Acquired: IP=%d.%d.%d.%d , "
             "Gateway=%d.%d.%d.%d\n\r",
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.ip,3),
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.ip,2),
@@ -287,23 +291,19 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.gateway,2),
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.gateway,1),
             SL_IPV4_BYTE(pNetAppEvent->EventData.ipAcquiredV4.gateway,0));
-            */
+            
         }
         break;
 
         case SL_NETAPP_IP_LEASED_EVENT:
         {
             SET_STATUS_BIT(g_ulStatus, STATUS_BIT_IP_LEASED);
-
-            //
-            // Information about the IP-Leased details(like IP-Leased,lease-time,
-            // mac etc) will be available in 'SlIpLeasedAsync_t' - Applications
-            // can use it if required
-            //
-            // SlIpLeasedAsync_t *pEventData = NULL;
-            // pEventData = &pNetAppEvent->EventData.ipLeased;
-            //
-
+        
+            g_ulStaIp = (pNetAppEvent)->EventData.ipLeased.ip_address;
+            
+            UART_PRINT("[NETAPP EVENT] IP Leased to Client: IP=%d.%d.%d.%d , ",
+                        SL_IPV4_BYTE(g_ulStaIp,3), SL_IPV4_BYTE(g_ulStaIp,2),
+                        SL_IPV4_BYTE(g_ulStaIp,1), SL_IPV4_BYTE(g_ulStaIp,0));
         }
         break;
 
@@ -311,14 +311,9 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
         {
             CLR_STATUS_BIT(g_ulStatus, STATUS_BIT_IP_LEASED);
 
-            //
-            // Information about the IP-Released details (like IP-address, mac
-            // etc) will be available in 'SlIpReleasedAsync_t' - Applications
-            // can use it if required
-            //
-            // SlIpReleasedAsync_t *pEventData = NULL;
-            // pEventData = &pNetAppEvent->EventData.ipReleased;
-            //
+            UART_PRINT("[NETAPP EVENT] IP Released for Client: IP=%d.%d.%d.%d , ",
+                        SL_IPV4_BYTE(g_ulStaIp,3), SL_IPV4_BYTE(g_ulStaIp,2),
+                        SL_IPV4_BYTE(g_ulStaIp,1), SL_IPV4_BYTE(g_ulStaIp,0));
         }
         break;
 

@@ -18,6 +18,7 @@
 extern volatile unsigned long  g_ulStatus;//SimpleLink Status
 extern unsigned long  g_ulPingPacketsRecv; //Number of Ping Packets received
 extern unsigned long  g_ulDeviceIp;
+extern unsigned long  g_ulStaIp;
 extern unsigned long  g_ulGatewayIP; //Network Gateway IP address
 extern unsigned char  g_ucConnectionSSID[SSID_LEN_MAX+1]; //Connection SSID
 extern unsigned char  g_ucConnectionBSSID[BSSID_LEN_MAX]; //Connection BSSID

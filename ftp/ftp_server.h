@@ -123,6 +123,8 @@ typedef struct{
 #define INPUT
 #define OUTPUT
 
+void ftpServerInit();
+
 // listening at host:21 and create ftpConnTask
 // to handle each client separately
 void ftpServerTask(void *pvParameters);

@@ -29,6 +29,7 @@
 // common interface includes
 #include "gpio_if.h"
 #include "uart_if.h"
+#include "i2c_if.h"
 #include "common.h"
 
 #include "smartconfig.h"
@@ -41,6 +42,8 @@
 #include "app_http_server.h"
 #include "app_storage.h"
 #include "app_ap.h"
+#include "ftp/ftp_server.h"
+#include "hid/hid.h"
 
 #define SDHOST_CLK_SPEED 24000000
 //*****************************************************************************
@@ -53,6 +56,7 @@ unsigned char  g_ucConnectionSSID[SSID_LEN_MAX+1]; //Connection SSID
 unsigned char  g_ucConnectionBSSID[BSSID_LEN_MAX]; //Connection BSSID
 int g_iSimplelinkRole = ROLE_INVALID;
 unsigned long  g_ulDeviceIp = 0;
+unsigned long  g_ulStaIp = 0;
 unsigned char g_ucSSID[AP_SSID_LEN_MAX];
 
 #if defined(ccs)
@@ -95,7 +99,6 @@ extern StorageMsg_t pullMsg;
 void main(void)
 {
     long lRetVal = -1;
-    OsiReturnVal_e osiRetVal;
 
     //*****************************************************************************
     //              Board Routines -- Start
@@ -190,20 +193,54 @@ void main(void)
     
     // //
     // // Create p2p(connection) management Task
-    osiRetVal = osi_SyncObjCreate(&p2pKickStarter);
-    if(osiRetVal != OSI_OK){
-        ERR_PRINT(osiRetVal);
-        LOOP_FOREVER();
-    }
-    lRetVal = osi_TaskCreate(P2PManagerTask, (signed char*)"P2PManagerTask",
+    // lRetVal = osi_SyncObjCreate(&p2pKickStarter);
+    // if(lRetVal != OSI_OK){
+    //     ERR_PRINT(lRetVal);
+    //     LOOP_FOREVER();
+    // }
+    // lRetVal = osi_TaskCreate(P2PManagerTask, (signed char*)"P2PManagerTask",
+    //     OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+    // );
+    // if(lRetVal != OSI_OK){
+    //     ERR_PRINT(lRetVal);
+    //     LOOP_FOREVER();
+    // }
+
+    lRetVal = osi_TaskCreate(APTask, (signed char*)"APTask",
         OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
     );
+    if(lRetVal != OSI_OK){
+        ERR_PRINT(lRetVal);
+        LOOP_FOREVER();
+    }
+
+    ftpServerInit();
+    lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"FtpTask",
+        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+    );
+    if(lRetVal != OSI_OK){
+        ERR_PRINT(lRetVal);
+        LOOP_FOREVER();
+    }
+
+    /* imu */
+    //
+    // I2C Init
+    //
+    hidInit();
+    lRetVal = osi_TaskCreate(hidTask, (signed char*)"hidTask",
+        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+    );
+    if(lRetVal != OSI_OK){
+        ERR_PRINT(lRetVal);
+        LOOP_FOREVER();
+    }
 
     //
     // Create HTTP Server Task
-    // osiRetVal = osi_SyncObjCreate(&httpKickStarter);
-    // if(osiRetVal != OSI_OK){
-    //     ERR_PRINT(osiRetVal);
+    // lRetVal = osi_SyncObjCreate(&httpKickStarter);
+    // if(lRetVal != OSI_OK){
+    //     ERR_PRINT(lRetVal);
     //     LOOP_FOREVER();
     // }
     // lRetVal = osi_TaskCreate(HTTPServerTask, (signed char*)"httpServer",

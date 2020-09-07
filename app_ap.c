@@ -35,12 +35,57 @@
 #include "app_global_variables.h"
 #include "app_simplelink_config.h"
 #include "app_ap.h"
+#include "ftp/ftp_server.h"
 
 extern OsiSyncObj_t httpKickStarter;
+extern SemaphoreHandle_t semFtpKickStarter;
+extern SemaphoreHandle_t semHidKickStarter;
+
+//****************************************************************************
+//
+//! Confgiures the mode in which the device will work
+//!
+//! \param iMode is the current mode of the device
+//!
+//! This function
+//!    1. prompt user for desired configuration and accordingly configure the
+//!          networking mode(STA or AP).
+//!       2. also give the user the option to configure the ssid name in case of
+//!       AP mode.
+//!
+//! \return sl_start return value(int).
+//
+//****************************************************************************
+static int ConfigureMode(int iMode)
+{
+    long   lRetVal = -1;
+
+
+    lRetVal = sl_WlanSetMode(ROLE_AP);
+    ASSERT_ON_ERROR(lRetVal);
+
+    lRetVal = sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SSID, strlen(AP_SSID),
+                            (unsigned char*)AP_SSID);
+    ASSERT_ON_ERROR(lRetVal);
+
+    UART_PRINT("Device is configured in AP mode\n\r");
+
+    /* Restart Network processor */
+    lRetVal = sl_Stop(SL_STOP_TIMEOUT);
+
+    // reset status bits
+    CLR_STATUS_BIT_ALL(g_ulStatus);
+
+    return sl_Start(NULL,NULL,NULL);
+}
 
 void APTask(void *pvParameters)
 {
+    unsigned char ucDHCP;
+    unsigned char len = sizeof(SlNetCfgIpV4Args_t);
+    SlNetCfgIpV4Args_t ipV4 = {0};
     long lRetVal = -1;
+
     InitializeAppVariables();
 
     //
@@ -62,149 +107,73 @@ void APTask(void *pvParameters)
 
         LOOP_FOREVER();
     }
+    UART_PRINT("Device is configured in default state \n\r");
 
-    UART_PRINT("Device is configured in default state \n\r");  
-  
-    memset(g_ucSSID,'\0',AP_SSID_LEN_MAX);
+    //
+    // Asumption is that the device is configured in station mode already
+    // and it is in its default state
+    //
+    lRetVal = sl_Start(NULL,NULL,NULL);
+
+    if (lRetVal < 0)
+    {
+        UART_PRINT("Failed to start the device \n\r");
+        LOOP_FOREVER();
+    }
+
+    UART_PRINT("Device started as STATION \n\r");
     
-    //Read Device Mode Configuration
-    ReadDeviceConfiguration();
-
-    //Connect to Network
-    lRetVal = ConnectToNetwork();
-    
-    osi_SyncObjSignal(&httpKickStarter);
-
-    //Handle Async Events
-    while(1)
+    //
+    // Configure the networking mode and ssid name(for AP mode)
+    //
+    if(lRetVal != ROLE_AP)
     {
-         
-    }
-}
-
-//****************************************************************************
-//
-//!    \brief Connects to the Network in AP or STA Mode - If ForceAP Jumper is
-//!                                             Placed, Force it to AP mode
-//!
-//! \return                        0 on success else error code
-//
-//****************************************************************************
-long ConnectToNetwork()
-{
-    char ucAPSSID[32];
-    unsigned short len, config_opt;
-    long lRetVal = -1;
-
-    // staring simplelink
-    g_uiSimplelinkRole =  sl_Start(NULL,NULL,NULL);
-
-    // Device is not in STA mode and Force AP Jumper is not Connected 
-    //- Switch to STA mode
-    if(g_uiSimplelinkRole != ROLE_STA && g_uiDeviceModeConfig == ROLE_STA )
-    {
-        //Switch to STA Mode
-        lRetVal = sl_WlanSetMode(ROLE_STA);
-        ASSERT_ON_ERROR(lRetVal);
-        
-        lRetVal = sl_Stop(SL_STOP_TIMEOUT);
-        
-        g_usMCNetworkUstate = 0;
-        g_uiSimplelinkRole =  sl_Start(NULL,NULL,NULL);
+        if(ConfigureMode(lRetVal) != ROLE_AP)
+        {
+            UART_PRINT("Unable to set AP mode, exiting Application...\n\r");
+            sl_Stop(SL_STOP_TIMEOUT);
+            LOOP_FOREVER();
+        }
     }
 
-    //Device is not in AP mode and Force AP Jumper is Connected - 
-    //Switch to AP mode
-    if(g_uiSimplelinkRole != ROLE_AP && g_uiDeviceModeConfig == ROLE_AP )
+    //looping till ip is acquired
+    while(!IS_IP_ACQUIRED(g_ulStatus))
     {
-         //Switch to AP Mode
-        lRetVal = sl_WlanSetMode(ROLE_AP);
-        ASSERT_ON_ERROR(lRetVal);
-        
-        lRetVal = sl_Stop(SL_STOP_TIMEOUT);
-        
-        g_usMCNetworkUstate = 0;
-        g_uiSimplelinkRole =  sl_Start(NULL,NULL,NULL);
+        taskYIELD();
     }
 
-    //No Mode Change Required
-    if(g_uiSimplelinkRole == ROLE_AP)
-    {
-       //waiting for the AP to acquire IP address from Internal DHCP Server
-       while(!IS_IP_ACQUIRED(g_ulStatus))
-       {
-
-       }
-
-       char iCount=0;
-       //Read the AP SSID
-       memset(ucAPSSID,'\0',AP_SSID_LEN_MAX);
-       len = AP_SSID_LEN_MAX;
-       config_opt = WLAN_AP_OPT_SSID;
-       lRetVal = sl_WlanGet(SL_WLAN_CFG_AP_ID, &config_opt , &len,
-                                              (unsigned char*) ucAPSSID);
-        ASSERT_ON_ERROR(lRetVal);
+    while(1){
+        // get network configuration
+        lRetVal = sl_NetCfgGet(SL_IPV4_AP_P2P_GO_GET_INFO,&ucDHCP,&len,
+                                (unsigned char *)&ipV4);
+        if (lRetVal < 0)
+        {
+            UART_PRINT("Failed to get network configuration \n\r");
+            LOOP_FOREVER();
+        }
         
-       Report("\n\rDevice is in AP Mode, Please Connect to AP [%s] and"
-          "type [mysimplelink.net] in the browser \n\r",ucAPSSID);
-       
-       //Blink LED 3 times to Indicate AP Mode
-       for(iCount=0;iCount<3;iCount++)
-       {
-           //Turn RED LED On
-           GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-           osi_Sleep(400);
-           
-           //Turn RED LED Off
-           GPIO_IF_LedOff(MCU_RED_LED_GPIO);
-           osi_Sleep(400);
-       }
+        UART_PRINT("Connect a client to Device...\n\r");
+        
+        while(!IS_IP_LEASED(g_ulStatus)){ // loop until connected
+            taskYIELD();
+        }
 
+        xSemaphoreGive(semFtpKickStarter);
+        xSemaphoreGive(semHidKickStarter);
+        // osi_SyncObjSignal(&httpK ickStarter);
+
+        while(IS_IP_LEASED(g_ulStatus)){ // loop until disconnected
+            taskYIELD();
+        }
     }
-    else
+
+    /*  
+    // revert to STA mode
+    lRetVal = sl_WlanSetMode(ROLE_STA);
+    if(lRetVal < 0)
     {
-		//waiting for the device to Auto Connect
-		while ( (!IS_IP_ACQUIRED(g_ulStatus))&&
-			   g_ucConnectTimeout < AUTO_CONNECTION_TIMEOUT_COUNT)
-		{
-			//Turn RED LED On
-			GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-			osi_Sleep(50);
-
-			//Turn RED LED Off
-			GPIO_IF_LedOff(MCU_RED_LED_GPIO);
-			osi_Sleep(50);
-
-			g_ucConnectTimeout++;
-		}
-		//Couldn't connect Using Auto Profile
-		if(g_ucConnectTimeout == AUTO_CONNECTION_TIMEOUT_COUNT)
-		{
-			//Blink Red LED to Indicate Connection Error
-			GPIO_IF_LedOn(MCU_RED_LED_GPIO);
-
-			CLR_STATUS_BIT_ALL(g_ulStatus);
-
-			Report("Use Smart Config Application to configure the device.\n\r");
-			//Connect Using Smart Config
-			lRetVal = SmartConfigConnect();
-			ASSERT_ON_ERROR(lRetVal);
-
-			//Waiting for the device to Auto Connect
-			while(!IS_IP_ACQUIRED(g_ulStatus))
-			{
-				MAP_UtilsDelay(500);
-			}
-
-		}
-    //Turn RED LED Off
-    GPIO_IF_LedOff(MCU_RED_LED_GPIO);
-    UART_PRINT("\n\rDevice is in STA Mode, Connect to the AP[%s] and type"
-          "IP address [%d.%d.%d.%d] in the browser \n\r",g_ucConnectionSSID,
-          SL_IPV4_BYTE(g_ulDeviceIp,3),SL_IPV4_BYTE(g_ulDeviceIp,2),
-          SL_IPV4_BYTE(g_ulDeviceIp,1),SL_IPV4_BYTE(g_ulDeviceIp,0));
-
+      ERR_PRINT(lRetVal);
+      LOOP_FOREVER();
     }
-
-    return SUCCESS;
+    */
 }

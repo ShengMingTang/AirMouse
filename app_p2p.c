@@ -40,6 +40,8 @@
 //                 EXTERN -- Start
 //*****************************************************************************
 extern OsiSyncObj_t httpKickStarter;
+extern SemaphoreHandle_t semFtpKickStarter;
+extern SemaphoreHandle_t semHidKickStarter;
 //*****************************************************************************
 //                 EXTERN -- End
 //*****************************************************************************
@@ -63,7 +65,6 @@ OsiSyncObj_t p2pKickStarter;
 void P2PManagerTask(void *pvParameters)
 {
     long lRetVal = -1;
-    long isftpStarted = 0;
 
     UART_PRINT("Scan Wi-FI direct device in your handheld device\n\r");
     
@@ -98,17 +99,9 @@ void P2PManagerTask(void *pvParameters)
             }
 
             // start up http server after connection is set
-            osi_SyncObjSignal(&httpKickStarter);
-            if(isftpStarted == 0){
-                lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"ftpServer",
-                    SERVER_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
-                );
-                if(lRetVal < 0){
-                    ERR_PRINT(lRetVal);
-                    LOOP_FOREVER();
-                }
-                isftpStarted = 1;
-            }
+            xSemaphoreGive(semFtpKickStarter);
+            xSemaphoreGive(semHidKickStarter);
+            // osi_SyncObjSignal(&httpKickStarter);
 
             // wait until disconnected, disconnection should signal this
             osi_SyncObjWait(&p2pKickStarter, OSI_WAIT_FOREVER);

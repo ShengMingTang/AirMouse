@@ -1,7 +1,20 @@
 #include "ftp_server.h"
 
+SemaphoreHandle_t semFtpKickStarter;
 static SemaphoreHandle_t semTaskRunning;
 
+void ftpServerInit()
+{
+    if(ftpStorageInit() < 0){
+        printf("Storage Init Error\n\r");
+    }
+    if((semFtpKickStarter = xSemaphoreCreateCounting(1, 0)) == NULL){
+        printf("Create semFtp Error\n\r");
+    }
+    if((semTaskRunning = xSemaphoreCreateCounting(MAX_NUM_TASKS, MAX_NUM_TASKS)) == NULL){
+        printf("Create semTaskRunning Error\n\r");
+    }
+}
 void ftpServerTask(void *pvParameters)
 {
     // socket
@@ -11,48 +24,49 @@ void ftpServerTask(void *pvParameters)
     int retVal;
     int param = 0; // parameter for child connTask
 
-    if(ftpStorageInit() < 0){
-        vTaskDelete(NULL);
-    }
-    if((semTaskRunning = xSemaphoreCreateCounting(MAX_NUM_TASKS, MAX_NUM_TASKS)) == NULL){
-        printf("Create semTaskRunning Error\n\r");
-        vTaskDelete(NULL);
-    }
-
-    // create a listening socket
-    if((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){ // error
-        printf("listen Socket Error %d\r\n", listenfd);
-        vTaskDelete(NULL);
-    }
+    // init server addr
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family      = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	servaddr.sin_port        = htons((unsigned short)FTP_PORT);
-    if(retVal = bind(listenfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
-        printf("bind Socket Error %d\r\n", retVal);
-        close(listenfd);
-        vTaskDelete(NULL);
-    }
-    if(retVal = listen(listenfd, LISTENQ) < 0){
-        printf("listen Socket Error %d\r\n", retVal);
-        close(listenfd);
-        vTaskDelete(NULL);
-    }
+
+    xSemaphoreTake(semFtpKickStarter, portMAX_DELAY); // wait for IP layer task go first
 
     // wait for connectio and create separate children task to handle each client
     while(1){
         xSemaphoreTake(semTaskRunning, portMAX_DELAY); // limit max connection
 
+        // open listening socket, task deleted on error
+        if((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+            printf("listen Socket Error %d\r\n", listenfd);
+            vTaskDelete(NULL);
+        }
+        // bind
+        if(retVal = bind(listenfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
+            printf("bind Socket Error %d\r\n", retVal);
+            close(listenfd);
+            vTaskDelete(NULL);
+        }
+        if(retVal = listen(listenfd, LISTENQ) < 0){
+            printf("listen Socket Error %d\r\n", retVal);
+            close(listenfd);
+            vTaskDelete(NULL);
+        }
+        // ready to accept connection
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
+#if defined(VERBOSE)
         printf("New Client Detected ...\n\r");
-        
+#endif
+        // close listening socket immediately to avoid memory leak on task deletion
+        close(listenfd);
+
         // check connfd is valid
         if(connfd < 0){
             printf("accept Socket error %d, continue listening\n\r", connfd);
             xSemaphoreGive(semTaskRunning);
         }
         else{ // on receiving a connection request
-            while(param){} // loop until child task set this to 0
+            while(param){} // loop until child task set this to 0, stuck in multiple clients scenario
 
             param = connfd; // connfd is closed by its children
             if((retVal = xTaskCreate(ftpConnTask, "", CONN_STACK_SIZE, (void*)(&param), DATA_TASK_PRIOR, NULL)) != pdPASS){
@@ -64,7 +78,7 @@ void ftpServerTask(void *pvParameters)
     }
 
     printf("Ftp server task dead\n\r");
-    close(listenfd);
+    // close(listenfd); // already closed above
     vTaskDelete(NULL);
 }
 void ftpConnTask(void *pvParameters)
@@ -258,7 +272,6 @@ void ftpConnTask(void *pvParameters)
     xSemaphoreGive(semTaskRunning);
     vTaskDelete(NULL);
 }
-// OK
 int ftpGetCmd(char *str, Cmd_t *cmd)
 {
     // @@ can be made case insensitive comparison

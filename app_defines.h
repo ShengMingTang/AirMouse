@@ -15,6 +15,9 @@
 #define ROLE_INVALID                    (-5)
 #define AUTO_CONNECTION_TIMEOUT_COUNT   (50)   /* 5 Sec */
 
+// WLAN defines
+#define AP_SSID "Air-Mouse"
+
 // P2P defines
 #define P2P_REMOTE_DEVICE   "remote-p2p-device"
 // #define P2P_DEVICE_NAME     "cc3200-p2p-device"
