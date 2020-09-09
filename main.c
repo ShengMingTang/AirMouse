@@ -56,7 +56,7 @@ unsigned char  g_ucConnectionSSID[SSID_LEN_MAX+1]; //Connection SSID
 unsigned char  g_ucConnectionBSSID[BSSID_LEN_MAX]; //Connection BSSID
 int g_iSimplelinkRole = ROLE_INVALID;
 unsigned long  g_ulDeviceIp = 0;
-unsigned long  g_ulStaIp = 0;
+volatile unsigned long  g_ulStaIp = 0;
 unsigned char g_ucSSID[AP_SSID_LEN_MAX];
 
 #if defined(ccs)
@@ -214,14 +214,14 @@ void main(void)
         LOOP_FOREVER();
     }
 
-    ftpServerInit();
-    lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"FtpTask",
-        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
-    );
-    if(lRetVal != OSI_OK){
-        ERR_PRINT(lRetVal);
-        LOOP_FOREVER();
-    }
+    // ftpServerInit();
+    // lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"FtpTask",
+    //     OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+    // );
+    // if(lRetVal != OSI_OK){
+    //     ERR_PRINT(lRetVal);
+    //     LOOP_FOREVER();
+    // }
 
     /* imu */
     //
@@ -229,7 +229,7 @@ void main(void)
     //
     hidInit();
     lRetVal = osi_TaskCreate(hidTask, (signed char*)"hidTask",
-        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+        OSI_STACK_SIZE, NULL, 8, NULL
     );
     if(lRetVal != OSI_OK){
         ERR_PRINT(lRetVal);

@@ -56,12 +56,81 @@ void
 PinMuxConfig(void)
 {
     //
-    // Enable Peripheral Clocks
+    // Set unused pins to PIN_MODE_0 with the exception of JTAG pins 16,17,19,20
     //
-    MAP_PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
-    MAP_PRCMPeripheralClkEnable(PRCM_GPIOA0, PRCM_RUN_MODE_CLK);
+    MAP_PinModeSet(PIN_03, PIN_MODE_0);
+    MAP_PinModeSet(PIN_05, PIN_MODE_0);
+    MAP_PinModeSet(PIN_06, PIN_MODE_0);
+    MAP_PinModeSet(PIN_18, PIN_MODE_0);
+    MAP_PinModeSet(PIN_21, PIN_MODE_0);
+    MAP_PinModeSet(PIN_45, PIN_MODE_0);
+    MAP_PinModeSet(PIN_52, PIN_MODE_0);
+    MAP_PinModeSet(PIN_53, PIN_MODE_0);
+    MAP_PinModeSet(PIN_58, PIN_MODE_0);
+    MAP_PinModeSet(PIN_59, PIN_MODE_0);
+    MAP_PinModeSet(PIN_60, PIN_MODE_0);
+    MAP_PinModeSet(PIN_62, PIN_MODE_0);
+    
+    //
+    // Enable Peripheral Clocks 
+    //
     MAP_PRCMPeripheralClkEnable(PRCM_GPIOA1, PRCM_RUN_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(PRCM_GPIOA2, PRCM_RUN_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_SDHOST, PRCM_RUN_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
+
+    //
+    // Configure PIN_04 for GPIO Input
+    //
+    MAP_PinTypeGPIO(PIN_04, PIN_MODE_0, false);
+    MAP_GPIODirModeSet(GPIOA1_BASE, 0x20, GPIO_DIR_MODE_IN);
+
+    //
+    // Configure PIN_15 for GPIO Input
+    //
+    MAP_PinTypeGPIO(PIN_15, PIN_MODE_0, false);
+    MAP_GPIODirModeSet(GPIOA2_BASE, 0x40, GPIO_DIR_MODE_IN);
+
+    //
+    // Configure PIN_01 for I2C0 I2C_SCL
+    //
+    MAP_PinTypeI2C(PIN_01, PIN_MODE_1);
+
+    //
+    // Configure PIN_02 for I2C0 I2C_SDA
+    //
+    MAP_PinTypeI2C(PIN_02, PIN_MODE_1);
+
+    //
+    // Configure PIN_63 for SDHost0 SDCARD_IRQ
+    //
+    MAP_PinTypeSDHost(PIN_63, PIN_MODE_6);
+
+    //
+    // Configure PIN_64 for SDHost0 SDCARD_DATA
+    //
+    MAP_PinTypeSDHost(PIN_64, PIN_MODE_6);
+
+    //
+    // Configure PIN_07 for SDHost0 SDCARD_CLK
+    //
+    MAP_PinTypeSDHost(PIN_07, PIN_MODE_8);
+
+    //
+    // Configure PIN_08 for SDHost0 SDCARD_CMD
+    //
+    MAP_PinTypeSDHost(PIN_08, PIN_MODE_8);
+
+    //
+    // Configure PIN_61 for UART0 UART0_RTS
+    //
+    MAP_PinTypeUART(PIN_61, PIN_MODE_5);
+
+    //
+    // Configure PIN_50 for UART0 UART0_CTS
+    //
+    MAP_PinTypeUART(PIN_50, PIN_MODE_12);
 
     //
     // Configure PIN_55 for UART0 UART0_TX
@@ -73,54 +142,76 @@ PinMuxConfig(void)
     //
     MAP_PinTypeUART(PIN_57, PIN_MODE_3);
 
-    //
-    // Configure PIN_58 for GPIOInput
-    //
-    MAP_PinTypeGPIO(PIN_58, PIN_MODE_0, false);
-    MAP_GPIODirModeSet(GPIOA0_BASE, 0x8, GPIO_DIR_MODE_IN);
 
-    //
-    // Configure PIN_64 for GPIOOutput
-    //
-    MAP_PinTypeGPIO(PIN_64, PIN_MODE_0, false);
-    MAP_GPIODirModeSet(GPIOA1_BASE, 0x2, GPIO_DIR_MODE_OUT);
+    // //
+    // // Enable Peripheral Clocks
+    // //
+    // MAP_PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
+    // MAP_PRCMPeripheralClkEnable(PRCM_GPIOA0, PRCM_RUN_MODE_CLK);
+    // MAP_PRCMPeripheralClkEnable(PRCM_GPIOA1, PRCM_RUN_MODE_CLK);
+    // MAP_PRCMPeripheralClkEnable(PRCM_SDHOST, PRCM_RUN_MODE_CLK);
 
-    //
-    // Configure PIN_01 for GPIOOutput
-    //
-    MAP_PinTypeGPIO(PIN_01, PIN_MODE_0, false);
-    MAP_GPIODirModeSet(GPIOA1_BASE, 0x4, GPIO_DIR_MODE_OUT);
+    // /* UART */
+    // //
+    // // Configure PIN_55 for UART0 UART0_TX
+    // //
+    // MAP_PinTypeUART(PIN_55, PIN_MODE_3);
 
-    //
-    // Configure PIN_02 for GPIOOutput
-    //
-    MAP_PinTypeGPIO(PIN_02, PIN_MODE_0, false);
-    MAP_GPIODirModeSet(GPIOA1_BASE, 0x8, GPIO_DIR_MODE_OUT);
+    // //
+    // // Configure PIN_57 for UART0 UART0_RX
+    // //
+    // MAP_PinTypeUART(PIN_57, PIN_MODE_3);
 
-    //
-    // Configure PIN_06 for SDHOST0 SDHost_D0
-    //
-    MAP_PinTypeSDHost(PIN_06, PIN_MODE_8);
+    // /* GPIO */
+    // //
+    // // Configure PIN_58 for GPIOInput
+    // //
+    // MAP_PinTypeGPIO(PIN_58, PIN_MODE_0, false);
+    // MAP_GPIODirModeSet(GPIOA0_BASE, 0x8, GPIO_DIR_MODE_IN);
 
-    //
-    // Configure PIN_07 for SDHOST0 SDHost_CLK
-    //
-    MAP_PinTypeSDHost(PIN_07, PIN_MODE_8);
+    // //
+    // // Configure PIN_64 for GPIOOutput
+    // //
+    // MAP_PinTypeGPIO(PIN_64, PIN_MODE_0, false);
+    // MAP_GPIODirModeSet(GPIOA1_BASE, 0x2, GPIO_DIR_MODE_OUT);
 
-    //
-    // Configure PIN_08 for SDHOST0 SDHost_CMD
-    //
-    MAP_PinTypeSDHost(PIN_08, PIN_MODE_8);
+    // //
+    // // Configure PIN_01 for GPIOOutput
+    // //
+    // MAP_PinTypeGPIO(PIN_01, PIN_MODE_0, false);
+    // MAP_GPIODirModeSet(GPIOA1_BASE, 0x4, GPIO_DIR_MODE_OUT);
 
-    /* i2c */
-    MAP_PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK);
-    //
-    // Configure PIN_01 for I2C0 I2C_SCL
-    //
-    MAP_PinTypeI2C(PIN_01, PIN_MODE_1);
+    // //
+    // // Configure PIN_02 for GPIOOutput
+    // //
+    // MAP_PinTypeGPIO(PIN_02, PIN_MODE_0, false);
+    // MAP_GPIODirModeSet(GPIOA1_BASE, 0x8, GPIO_DIR_MODE_OUT);
 
-    //
-    // Configure PIN_02 for I2C0 I2C_SDA
-    //
-    MAP_PinTypeI2C(PIN_02, PIN_MODE_1);
+    // /* SD HOST */
+    // //
+    // // Configure PIN_06 for SDHOST0 SDHost_D0
+    // //
+    // MAP_PinTypeSDHost(PIN_06, PIN_MODE_8);
+
+    // //
+    // // Configure PIN_07 for SDHOST0 SDHost_CLK
+    // //
+    // MAP_PinTypeSDHost(PIN_07, PIN_MODE_8);
+
+    // //
+    // // Configure PIN_08 for SDHOST0 SDHost_CMD
+    // //
+    // MAP_PinTypeSDHost(PIN_08, PIN_MODE_8);
+
+    // /* i2c */
+    // MAP_PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK);
+    // //
+    // // Configure PIN_01 for I2C0 I2C_SCL
+    // //
+    // MAP_PinTypeI2C(PIN_01, PIN_MODE_1);
+
+    // //
+    // // Configure PIN_02 for I2C0 I2C_SDA
+    // //
+    // MAP_PinTypeI2C(PIN_02, PIN_MODE_1);
 }

@@ -1,7 +1,18 @@
 #ifndef IMU_H
 #define IMU_H
 
-#define SAMPLE_PERIOD_IN_MS 100
+// hardware
+#define MOUSE_BTN_LEFT_PIN (22)
+#define MOUSE_BTN_RIGHT_PIN (13)
+// symbolic signs
+#define MOUSE_LEFT (0x04)
+#define MOUSE_MID (0x02)
+#define MOUSE_RIGHT (0x01)
+#define KB_MAXNUM_KEY_PRESS 6 // that many key can be pressed at the same time
+
+#define SAMPLE_PERIOD_IN_MS (8) // standard is at 125Hz
+#define CURSOR_VEL (500)
+#define SCALE ((CURSOR_VEL)*(SAMPLE_PERIOD_IN_MS)/1000)
 
 #define ACC (0)
 #define GYRO (1)
@@ -11,11 +22,11 @@
 #define Y (1)
 #define Z (2)
 
-#define RECVR_PORT 5002
+#define RECVR_PORT (5002)
 
 #define printf UART_PRINT
 
-#define MAXBUFF 128
+#define MAXBUFF (128)
 
 void hidInit();
 void hidTask(void *pvParameters);

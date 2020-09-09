@@ -158,9 +158,9 @@ void APTask(void *pvParameters)
             taskYIELD();
         }
 
-        xSemaphoreGive(semFtpKickStarter);
+        // xSemaphoreGive(semFtpKickStarter);
         xSemaphoreGive(semHidKickStarter);
-        // osi_SyncObjSignal(&httpK ickStarter);
+        // osi_SyncObjSignal(&httpKickStarter);
 
         while(IS_IP_LEASED(g_ulStatus)){ // loop until disconnected
             taskYIELD();
