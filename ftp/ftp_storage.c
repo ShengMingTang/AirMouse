@@ -7,21 +7,6 @@ static const char month[][4] = {
     "Sep", "Oct", "Nov", "Dec"
 };
 
-/* forward callback */
-static int fwdFd;
-static UINT fwdReadCb(const BYTE *p, UINT btf)
-{
-    int retVal;
-    if(btf == 0){ // sense call
-        return 1; // 0 busy, 1 ready
-    }
-    else{
-        if((retVal = send(fwdFd, p, btf, 0)) < 0){
-            printf("fwdReadCb Error\n\r");
-        }
-        return retVal;
-    }
-}
 static void trimFilename(const char *p, char *trim)
 {
     int i1, i2;
@@ -44,6 +29,7 @@ static void trimFilename(const char *p, char *trim)
     trim[i2] = '\0';
 }
 
+#if defined(PIPELINED)
 void ftpStreamTask(void *pvParameters)
 {
     FileStream_t *p = (FileStream_t*)pvParameters;
@@ -67,6 +53,7 @@ void ftpStreamTask(void *pvParameters)
     // vTaskDelete(NULL);
     while(1);
 }
+#endif
 int ftpStorageInit()
 {
     FRESULT res = FR_NOT_READY;
@@ -119,22 +106,17 @@ int ftpStorageRetr(int connfd, int datafd, char *path)
     while(!f_eof(&fp) && (retVal >= 0) && (res == FR_OK)){
         if((res = f_read(&fp, buff, sizeof(buff), &btf)) != FR_OK){
             printf("f_read Error %d\n\r", res);
-            continue;
+            return -1;
         }
         if((retVal = send(datafd, buff, btf, 0)) < 0){
-            if(retVal != SL_EAGAIN){
+            if(retVal != EAGAIN){
                 printf("send %d bytes Error %d\n\r", btf, retVal);
-                vTaskDelay(pdMS_TO_TICKS(SOCK_BREAK_MS));
+                return -1;
             }
-            else{
-                break;
-            }
+            // EAGAIN is Okay
+            // else{} is not neccessary
         }
     }
-    /*
-    fwdFd = datafd;
-    f_forward(&fp, &fwdReadCb, f_size(&fp), &btf);
-    */
 #else
     if(xTaskCreate(ftpStreamTask, "", STR_STCK_SIZE, (void*)(&param), STR_TASK_PRIOR, &child) != pdPASS){
         printf("Create streaming task Error\n\r");
@@ -185,8 +167,8 @@ int ftpStorageRetr(int connfd, int datafd, char *path)
     f_close(&fp);
     if((retVal = send(connfd, RESP_226_TRANS_COMPLETE, strlen(RESP_226_TRANS_COMPLETE), 0)) < 0){
         printf("Send 226 Error %d\n\r", retVal);
+        return -1;
     }
-    printf("Finishing retriveing %s\n\r", path);
 
     return 0;
 }

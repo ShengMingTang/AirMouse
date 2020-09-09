@@ -22,8 +22,24 @@
 /* source code build route */
 #define VERBOSE
 // #define TEST
-#define SD_CARD_PRESENT
-// #define PIPEPLINED // defined then use pipeline scheme
+#define PIPEPLINED // defined then use pipeline scheme
+// #define SUPPORT_ACTIVE_CONN
+
+// warnings
+#if defined(VERBOSE)
+#warning "Verbose mode is used"
+#endif
+#if defined(TEST)
+#warning "FTP server is running at test mode"
+#endif
+#if defined(PIPEPLINED)
+#warning "Pipeline scheme is used for storage, now only RETR is affected. NOT ALL TEST PASSED"
+#endif
+#if defined(SUPPORT_ACTIVE_CONN)
+#warning "Active Connection is supported"
+#else
+#warning "Active Connection is NOT supported"
+#endif
 
 
 // IP layer varabiles
@@ -32,29 +48,29 @@ extern unsigned long  g_ulDeviceIp;
 #define IPV4_BYTE(val,index) ( (val >> (index*8)) & 0xFF )
 
 // sizes
-#define MAX_NUM_TASKS 1
-#define MAXLINE 64
-#define MAXCMD  64
-#define MAXUSERNAME 32
-#define MAXPASS 32
-#define MAXPATH 64
-#define MAXBUFF 128
-#define MAXTRANS 1024
-#define	LISTENQ	1024
+#define MAX_NUM_TASKS (1)
+#define MAXLINE (64)
+#define MAXCMD  (64)
+#define MAXUSERNAME (32)
+#define MAXPASS (32)
+#define MAXPATH (64)
+#define MAXBUFF (128)
+#define MAXTRANS (1024)
+#define	LISTENQ	(1024)
 // stack sizes, related to the above sizes
-#define SERVER_STACK_SIZE 1024
-#define CONN_STACK_SIZE 3072
-#define STR_STCK_SIZE 512
-#define DATA_TASK_PRIOR 1
-#define STR_TASK_PRIOR 1
+#define SERVER_STACK_SIZE (1024)
+#define CONN_STACK_SIZE (3072)
+#define STR_STCK_SIZE (512)
+#define DATA_TASK_PRIOR (1)
+#define STR_TASK_PRIOR (1)
 // socket options
-#define FTP_PORT 21
-#define CONN_SOCK_TIMEOUT 60
-#define DATA_SOCK_TIMEOUT 3
-#define INV_CMD_TIMES 5 // max number of invalud command a client can send
-#define SOCK_BREAK_MS 50
+#define FTP_PORT (21)
+#define CONN_SOCK_TIMEOUT (60)
+#define DATA_SOCK_TIMEOUT (3)
+#define INV_CMD_TIMES (5) // max number of invalud command a client can send
+#define SOCK_BREAK_MS (50)
 // timeout for event wait
-#define FILSTR_EVENT_WAIT_MS 2000
+#define FILSTR_EVENT_WAIT_MS (2000)
 
 // messages
 #define RESP_125_TRANS_START "125 Data connection already open; transfer starting.\r\n"
@@ -83,7 +99,9 @@ typedef enum{
     CMD_PASS,
     CMD_QUIT,
     CMD_PASV,
-    // CMD_PORT,
+#if defined(SUPPORT_ACTIVE_CONN)
+    CMD_PORT,
+#endif
 /* file operation */
     CMD_RETR, // data
     CMD_STOR, // data
@@ -103,10 +121,11 @@ typedef enum{
     CMD_INVALID
 }Cmd_t;
 
+#if defined(PIPELINED)
 // events between streaming task and conn task
-#define FILSTR_SOCK_DONE 0x01
-#define FILSTR_DISK_DONE 0x02
-#define FILSTR_EOF 0x04
+#define FILSTR_SOCK_DONE (0x01)
+#define FILSTR_DISK_DONE (0x02)
+#define FILSTR_EOF (0x04)
 // param for streaming task
 typedef struct{
     // common
@@ -118,7 +137,7 @@ typedef struct{
     char *buff;
     UINT btf; // byte transfered of last copy
 }FileStream_t;
-
+#endif
 
 #define INPUT
 #define OUTPUT
@@ -161,7 +180,9 @@ int ftpProcessInvalid(int connfd);
 
 
 // lower order functions for interfacing with fs
+#if defined(PIPELINED)
 void ftpStreamTask(void *pvParameters);
+#endif
 int ftpStorageInit();
 // assume fs is mounted before all these functions are called
 int verifyUserPass(char *user, char *pass);
@@ -179,8 +200,9 @@ int ftpStorageMkd(int connfd, int datafd, char *path);
 int ftpStorageRmd(int connfd, int datafd, char *path);
 
 
-// not used
-void ftpProcessPort(int connfd, OUTPUT unsigned long *cltIp, OUTPUT unsigned long *cltPort);
+#if defined(SUPPORT_ACTIVE_CONN)
+int ftpProcessPort(int connfd, OUTPUT unsigned long *cltIp, OUTPUT unsigned long *cltPort);
 int  ftpSetupDataConnActive(int *datafd, unsigned long cltIp, unsigned short cltPort, unsigned short portScan);
+#endif
 
 #endif

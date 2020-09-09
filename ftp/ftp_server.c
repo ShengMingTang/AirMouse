@@ -39,18 +39,18 @@ void ftpServerTask(void *pvParameters)
         // open listening socket, task deleted on error
         if((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
             printf("listen Socket Error %d\r\n", listenfd);
-            vTaskDelete(NULL);
+            continue;
         }
         // bind
         if(retVal = bind(listenfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
             printf("bind Socket Error %d\r\n", retVal);
             close(listenfd);
-            vTaskDelete(NULL);
+            continue;
         }
         if(retVal = listen(listenfd, LISTENQ) < 0){
             printf("listen Socket Error %d\r\n", retVal);
             close(listenfd);
-            vTaskDelete(NULL);
+            continue;
         }
         // ready to accept connection
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
@@ -66,20 +66,16 @@ void ftpServerTask(void *pvParameters)
             xSemaphoreGive(semTaskRunning);
         }
         else{ // on receiving a connection request
-            while(param){} // loop until child task set this to 0, stuck in multiple clients scenario
+            while(param){} // loop until child task set this to 0, stuck only when multiple clients try to connect
 
             param = connfd; // connfd is closed by its children
             if((retVal = xTaskCreate(ftpConnTask, "", CONN_STACK_SIZE, (void*)(&param), DATA_TASK_PRIOR, NULL)) != pdPASS){
                 printf("Create Conn task Error %d\n\r", retVal);
-                break;
+                xSemaphoreGive(semTaskRunning);
             }
             
         }
     }
-
-    printf("Ftp server task dead\n\r");
-    // close(listenfd); // already closed above
-    vTaskDelete(NULL);
 }
 void ftpConnTask(void *pvParameters)
 {
@@ -87,21 +83,22 @@ void ftpConnTask(void *pvParameters)
     int connfd = *((int*)(pvParameters));
     int datafd = -1;
     struct timeval tv;
+#if defined(SUPPORT_ACTIVE_CONN)
     unsigned long cltIp, cltPort;
+#endif
     unsigned long portScan = 5001; // port scan from 5001 down ward
     // command
     char recvline[MAXLINE];
     char *scmd, *arg;
     Cmd_t cmd = CMD_INVALID;
-    char *parseHead = NULL;
     // user data
-    char user[MAXUSERNAME], pass[MAXPASS];
+    char user[MAXUSERNAME];
     char typeCode[MAXLINE];
     char rn[MAXPATH];
     // local
     int retVal;
     int done = 0; // 0 for enter loop, 1 on break the loop
-    int isConnOpen = 0;
+    int isConnOpen = 0; // 1 for data connection is open
     
     // protocol between task creator and task itself
     *((int*)pvParameters) = 0;
@@ -120,22 +117,22 @@ void ftpConnTask(void *pvParameters)
 
     while(!done){
         // wait for data conn port
-        if((retVal = recv(connfd, recvline, sizeof(recvline), 0)) < 0){ // timedout
-            if(retVal == EAGAIN){
+        if((retVal = recv(connfd, recvline, sizeof(recvline), 0)) < 0){
+            if(retVal == EAGAIN){ // timedout
                 printf("Connection timeout leave\n\r");
                 done = 1;
             }
-            else{ // unrecoverable
-                printf("<Error %d>\n\r", retVal);
+            else{ // unrecoverable error
+                printf("Conn recv Error %d\n\r", retVal);
                 close(connfd);
                 break;
             }
         }
         recvline[retVal - 2] = '\0'; // close that line
+
 #if defined(VERBOSE)
         printf("Received : \"%s\"\n\r", recvline);
 #endif
-
         scmd = strtok(recvline, " \0"); // strtok across scopes
         ftpGetCmd(scmd, &cmd);
         arg = strtok(NULL, "\0");
@@ -144,29 +141,31 @@ void ftpConnTask(void *pvParameters)
 #endif
         switch (cmd)
         {
-        /* user */
-            case CMD_USER:
-                if(ftpProcessUser(connfd, arg, user)){
+            /* user */
+            case CMD_USER:{
+                if(ftpProcessUser(connfd, arg, user))
                     done = 1;
-                }
                 break;
-            case CMD_PASS:
-                if(ftpProcessPass(connfd, user, arg)){
+            }
+            case CMD_PASS:{
+                if(ftpProcessPass(connfd, user, arg))
                     done = 1;
-                }
                 break;
-            case CMD_QUIT: // exit anyway
+            }
+            case CMD_QUIT:{ // exit anyway
                 ftpProcessQuit(connfd);
                 done = 1;
 #if defined(VERBOSE)
                 printf("%s quits\n\r", user);
 #endif
                 break;
-        /* file operation */
-            case CMD_RETR:
+            }
+            /* file operation */
+            case CMD_RETR:{
                 if(isConnOpen){
-                    ftpProcessRetr(connfd, datafd, arg);
                     isConnOpen = 0;
+                    if(ftpProcessRetr(connfd, datafd, arg))
+                        done = 1;
                 }
                 else{
                     printf("Conn not open\n\r");
@@ -176,10 +175,12 @@ void ftpConnTask(void *pvParameters)
                     }
                 }
                 break;
-            case CMD_STOR:
+            }
+            case CMD_STOR:{
                 if(isConnOpen){
-                    ftpProcessStor(connfd, datafd, arg);
                     isConnOpen = 0;
+                    if(ftpProcessStor(connfd, datafd, arg))
+                        done = 1;
                 }
                 else{
                     printf("Conn not open\n\r");
@@ -189,20 +190,28 @@ void ftpConnTask(void *pvParameters)
                     }
                 }
                 break;
-            case CMD_DELE:
-                ftpProcessDele(connfd, datafd, arg);
+            }
+            case CMD_DELE:{
+                if(ftpProcessDele(connfd, datafd, arg))
+                    done = 1;
                 break;
-            case CMD_RNFR:
-                ftpProcessRnfr(connfd, datafd, arg, rn);
+            }
+            case CMD_RNFR:{
+                if(ftpProcessRnfr(connfd, datafd, arg, rn))
+                    done = 1;
                 break;
-            case CMD_RNTO:
-                ftpProcessRnto(connfd, datafd, arg, rn);
+            }
+            case CMD_RNTO:{
+                if(ftpProcessRnto(connfd, datafd, arg, rn))
+                    done = 1;
                 break;
-        /* direcotry */
-            case CMD_LIST:
+            }
+            /* direcotry */
+            case CMD_LIST:{
                 if(isConnOpen){
-                    ftpProcessList(connfd, datafd, arg);
                     isConnOpen = 0;
+                    if(ftpProcessList(connfd, datafd, arg))
+                        done = 1;
                 }
                 else{
                     printf("Conn not open\n\r");
@@ -212,54 +221,71 @@ void ftpConnTask(void *pvParameters)
                     }
                 }
                 break;
-            case CMD_PWD:
-                if(ftpProcessPwd(connfd)){
+            }
+            case CMD_PWD:{
+                if(ftpProcessPwd(connfd))
                     done = 1;
-                }
                 break;
-            case CMD_CWD:
-                if(ftpProcessCwd(connfd, arg)){
+            }
+            case CMD_CWD:{
+                if(ftpProcessCwd(connfd, arg))
                     done = 1;
-                }
                 break;
-            case CMD_MKD:
-                ftpProcessMkd(connfd, datafd, arg);
+            }
+            case CMD_MKD:{
+                if(ftpProcessMkd(connfd, datafd, arg))
+                    done = 1;
                 break;
-            case CMD_RMD:
-                ftpProcessRmd(connfd, datafd, arg);
+            }
+            case CMD_RMD:{
+                if(ftpProcessRmd(connfd, datafd, arg))
+                    done = 1;
                 break;
+            }
             /* common */
-            case CMD_TYPE:
-                ftpProcessType(connfd, arg, typeCode);
+            case CMD_TYPE:{
+                if(ftpProcessType(connfd, arg, typeCode))
+                    done = 1;
                 break;
-            case CMD_SYST:
-                if(ftpProcessSyst(connfd) < 0){
+            }
+            case CMD_SYST:{
+                if(ftpProcessSyst(connfd))
+                    done = 1;
+                break;
+            }
+#if defined(SUPPORT_ACTIVE_CONN)
+            case CMD_PORT:{
+                if(ftpProcessPort(connfd, &cltIp, &cltPort)){
                     done = 1;
                 }
-                break;
-//            case CMD_PORT:
-//                ftpProcessPort(parseHead, connfd, &cltIp, &cltPort);
-//                if(ftpSetupDataConnActive(&datafd, cltIp, cltPort, portScan) < 0){
-//                    done = 1;
-//                }
-//                else{
-//                    isConnOpen = 1;
-//                }
-//                break;
-            case CMD_PASV:
-                ftpProcessPasv(connfd, portScan, g_ulDeviceIp, &datafd);
-                isConnOpen = 1;
-                break;
-            case CMD_NOOP:
-                if(ftpProcessNoop(connfd) < 0){
-                    done = 1;
+                else{
+                    if(ftpSetupDataConnActive(&datafd, cltIp, cltPort, portScan))
+                        done = 1;
+                    else
+                        isConnOpen = 1;
                 }
                 break;
-            case CMD_INVALID:
-                if(ftpProcessInvalid(connfd) < 0){
+           }
+#endif
+            case CMD_PASV:{
+                if(ftpProcessPasv(connfd, portScan, g_ulDeviceIp, &datafd)){
                     done = 1;
                 }
+                else{
+                    isConnOpen = 1;
+                }
                 break;
+            }
+            case CMD_NOOP:{
+                if(ftpProcessNoop(connfd))
+                    done = 1;
+                break;
+            }
+            case CMD_INVALID:{
+                if(ftpProcessInvalid(connfd) < 0)
+                    done = 1;
+                break;
+            }
             default:
                 break;
         }
@@ -274,7 +300,7 @@ void ftpConnTask(void *pvParameters)
 }
 int ftpGetCmd(char *str, Cmd_t *cmd)
 {
-    // @@ can be made case insensitive comparison
+    #warning "Case Insensitive command comparison is not implemented"
     *cmd = CMD_INVALID;
     if(!strcmp(str, "LIST"))
         *cmd = CMD_LIST;
@@ -324,7 +350,7 @@ int ftpProcessUser(int connfd, char *str, char *user)
 #if defined(VERBOSE)
     printf("User: %s\n\r", user);
 #endif
-    // always pass now
+    // verification is defered until PASS is sent
     if((retVal = send(connfd, RESP_331_SPEC_PASS, strlen(RESP_331_SPEC_PASS), 0)) < 0){
         printf("331 reply Error %d\n\r", retVal);
         return -1;
@@ -367,12 +393,13 @@ int ftpProcessQuit(int connfd)
 
 int ftpProcessRetr(int connfd, int datafd, char *path)
 {
+    int retVal;
 #if defined(VERBOSE)
     printf("Retrieving \"%s\"\n\r", path);
 #endif
 
 #if defined(TEST)
-    int i, retVal;
+    int i;
     static char bulkTest[1024];
     send(connfd, RESP_150_FILE_STAT_OK, strlen(RESP_150_FILE_STAT_OK), 0);
     for(i = 0; i < 1024; i++){
@@ -388,24 +415,22 @@ int ftpProcessRetr(int connfd, int datafd, char *path)
             vTaskDelay(pdMS_TO_TICKS(SOCK_BREAK_MS));
         }
     }
-    printf("Finish sending...\n\r");
     close(datafd);
-#elif defined(SD_CARD_PRESENT)
-    ftpStorageRetr(connfd, datafd, path);
+#else
+    retVal = ftpStorageRetr(connfd, datafd, path);
 #endif
     close(datafd);
-    return 0;
+    return retVal;
 }
 int ftpProcessStor(int connfd, int datafd, char *path)
 {
+    int retVal;
 #if defined(VERBOSE)
     printf("Storing %s\n\r", path);
 #endif
 
 #if defined(TEST)
-    // check file status @@bypass and @@testing
     int i;
-    int retVal = 0;
     char buff[MAXBUFF];
     send(connfd, RESP_150_FILE_STAT_OK, strlen(RESP_150_FILE_STAT_OK), 0);
     while((retVal = recv(datafd, buff, sizeof(buff), 0)) > 0){
@@ -416,42 +441,48 @@ int ftpProcessStor(int connfd, int datafd, char *path)
         if(retVal > 5) printf("...");
         printf("\n\r");
     }
-    send(connfd, RESP_226_TRANS_COMPLETE, strlen(RESP_226_TRANS_COMPLETE), 0);
+    if((retVal = send(connfd, RESP_226_TRANS_COMPLETE, strlen(RESP_226_TRANS_COMPLETE), 0)) < 0){
+        printf("Test send Error %d\n\r", retVal);
+    }
 #else
-    ftpStorageStor(connfd, datafd, path);
+    retVal = ftpStorageStor(connfd, datafd, path);
 #endif
     close(datafd);
-    return 0;
+    return retVal;
 }
 int ftpProcessDele(int connfd, int datafd, char *path)
 {
+    int retVal;
 #if defined(VERBOSE)
     printf("Deleting %s\n\r", path);
 #endif
-    ftpStorageDele(connfd, datafd, path);
+    retVal = ftpStorageDele(connfd, datafd, path);
     close(datafd);
-    return 0;
+    return retVal;
 }
 int ftpProcessRnfr(int connfd, int datafd, char *path, char *fr)
 {
+    int retVal;
     printf("Rename from %s\n\r", path);
-    ftpStorageRnfr(connfd, datafd, path);
+    retVal = ftpStorageRnfr(connfd, datafd, path);
     strcpy(fr, path);
     close(datafd);
-    return 0;
+    return retVal;
 }
 int ftpProcessRnto(int connfd, int datafd, char *path, char *fr)
 {
+    int retVal;
 #if defined(VERBOSE)
     printf("to %s\n\r", path);
 #endif
-    ftpStorageRnto(connfd, datafd, fr, path);
+    retVal = ftpStorageRnto(connfd, datafd, fr, path);
     close(datafd);
-    return 0;
+    return retVal;
 }
 
 int ftpProcessList(int connfd, int datafd, char *path)
 {
+    int retVal;
     char dir[MAXBUFF];
     if(path == NULL){
         dir[0] = '\0';
@@ -463,15 +494,20 @@ int ftpProcessList(int connfd, int datafd, char *path)
     printf("Listing \"%s\"\n\r", dir);
 #endif
 #if defined(TEST)
-    send(connfd, RESP_125_TRANS_START, strlen(RESP_125_TRANS_START), 0);
-    send(datafd, "-rw-r--r-- 1 owner group           62914560 Aug 26 16:31 README.txt\r\n", strlen("-rw-r--r-- 1 owner group           62914560 Aug 26 16:31 README.txt\r\n"), 0);
-    send(connfd, RESP_226_TRANS_COMPLETE, strlen(RESP_226_TRANS_COMPLETE), 0);
-    return 0;
+    if((retVal = send(connfd, RESP_125_TRANS_START, strlen(RESP_125_TRANS_START), 0)) < 0){
+        printf("send 125 Error %d\n\r", retVal);
+    }
+    else if((retVal = send(datafd, "-rw-r--r-- 1 owner group           62914560 Aug 26 16:31 README.txt\r\n", strlen("-rw-r--r-- 1 owner group           62914560 Aug 26 16:31 README.txt\r\n"), 0)) < 0){
+        printf("send list Error %d\n\r", retVal);
+    }
+    else if((retVal = send(connfd, RESP_226_TRANS_COMPLETE, strlen(RESP_226_TRANS_COMPLETE), 0)) < 0){
+        printf("send 226 Error %d\n\r", retVal);
+    }
 #else
-    ftpStorageList(connfd, datafd, dir);
+    retVal = ftpStorageList(connfd, datafd, dir);
 #endif
     close(datafd);
-    return 0;
+    return retVal;
 }
 int ftpProcessPwd(int connfd)
 {
@@ -480,12 +516,10 @@ int ftpProcessPwd(int connfd)
 int ftpProcessCwd(int connfd, char *arg)
 {
     char path[MAXPATH];
-    if(arg == NULL){
+    if(arg == NULL)
         path[0] = '\0';
-    }
-    else{
+    else
         strcpy(path, arg);
-    }
 #if defined(VERBOSE)
     printf("Cwd to %s\n\r", path);
 #endif
@@ -493,38 +527,42 @@ int ftpProcessCwd(int connfd, char *arg)
 }
 int ftpProcessMkd(int connfd, int datafd, char *path)
 {
+    int retVal;
 #if defined(VERVOSE)
     printf("Creating directory %s\n\r", path);
 #endif
-    ftpStorageMkd(connfd, datafd, path);
+    retVal = ftpStorageMkd(connfd, datafd, path);
     close(datafd);
-    return 0;
+    return retVal;
 }
 int ftpProcessRmd(int connfd, int datafd, char *path)
 {
+    int retVal;
 #if defined(VERVOSE)
     printf("Deleting directory %s\n\r", path);
 #endif
-    ftpStorageRmd(connfd, datafd, path);
+    retVal = ftpStorageRmd(connfd, datafd, path);
     close(datafd);
-    return 0;
+    return retVal;
 }
 
-// @@ type code does not change any behavior now
-int ftpProcessType(int connfd, char *arg, OUTPUT char *typeCode)
+#warning "TYPE command is bypassed, having no effect"
+int ftpProcessType(int connfd, char *arg, char *typeCode)
 {
     int retVal;
+
     strncpy(typeCode, arg, MAXPASS);
 #if defined(VERBOSE)
     printf("Type code: %s\n\r", arg);
 #endif
-    // always pass now
+
     if((retVal = send(connfd, RESP_200_CMD_OK, strlen(RESP_200_CMD_OK), 0)) < 0){
         printf("200 reply errror %d\n\r", retVal);
         return -1;
     }
     return 0;
 }
+#warning "SYST command is always answering UNIX style"
 int ftpProcessSyst(int connfd)
 {
     int retVal;
@@ -540,8 +578,7 @@ int ftpProcessPasv(int connfd, unsigned short portScan, unsigned long srvIp, int
     struct sockaddr_in tempaddr;
     int transfd;
     struct timeval tv;
-    char resp[64];
-    // int nonblocking = 1;
+    char resp[MAXBUFF];
 
 	if ( (*datafd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
         printf("Open datafd error %d", *datafd);
@@ -551,6 +588,7 @@ int ftpProcessPasv(int connfd, unsigned short portScan, unsigned long srvIp, int
     tv.tv_usec = 0;
     if((retVal = setsockopt(*datafd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv))) < 0){
         printf("Set socket rcvtimeo Error %d\n\r", retVal);
+        close(*datafd);
         return -1;
     }
 
@@ -590,26 +628,23 @@ int ftpProcessPasv(int connfd, unsigned short portScan, unsigned long srvIp, int
             return -1;
         }
         else{ // accepting connection
+#if defined(VERBOSE)
             printf("resp: %s\n\r", resp);
-            printf("accepting trasn conn\n\r");
-
-            // if((retVal = setsockopt(*datafd, , SOL_SOCKET, SO_NONBLOCKING, (const char*)&nonblocking, sizeof(nonblocking))) < 0){
-            //     printf("set to nonblocking Error %d\n\r", retVal);
-            //     close(*datafd);
-            //     return -1;
-            // }
-
+            printf("accepting trasn conn...\n\r");
+#endif
             if((transfd = accept(*datafd, (struct sockaddr*)NULL, NULL)) < 0){
                 printf("transfd Error %d\n\r", transfd);
+                close(*datafd);
                 return -1;
             }
+#if defined(VERBOSE)
             printf("accepted\n\r");
-
-            close(*datafd);
-            *datafd = transfd;
+#endif
         }
     }
 
+    close(*datafd);
+    *datafd = transfd;
     return 0;
 }
 int ftpProcessNoop(int connfd)
@@ -634,8 +669,9 @@ int ftpProcessInvalid(int connfd)
     return 0;
 }
 
-// not used
-void ftpProcessPort(int connfd, unsigned long *cltIp, unsigned long *cltPort)
+#if defined(SUPPORT_ACTIVE_CONN)
+#warning "Active connection is not tested"
+int ftpProcessPort(int connfd, unsigned long *cltIp, unsigned long *cltPort)
 {
     int retVal;
     char *n1, *n2, *n3, *n4, *n5, *n6;
@@ -650,7 +686,7 @@ void ftpProcessPort(int connfd, unsigned long *cltIp, unsigned long *cltPort)
 
     *cltIp = (atoi(n1) << 24) | (atoi(n2) << 16) | (atoi(n3) << 8) | (atoi(n4));
     *cltPort = (atoi(n5) << 8) | (atoi(n6));
-
+#if defined(VERBOSE)
     printf("Client Ip: %d.%d.%d.%d\n\r", 
         *cltIp & 0xFF000000,
         *cltIp & 0x00FF0000,
@@ -658,11 +694,14 @@ void ftpProcessPort(int connfd, unsigned long *cltIp, unsigned long *cltPort)
         *cltIp & 0x000000FF
     );
     printf("Client Port: %d\n\r", *cltPort);
+#endif
 
-    retVal = send(connfd, RESP_200_CMD_OK, strlen(RESP_200_CMD_OK), 0);
-    if(retVal < 0){
+    if((retVal = send(connfd, RESP_200_CMD_OK, strlen(RESP_200_CMD_OK), 0)) < 0){
         printf("send PORT resp Error %d\n\r", retVal);
+        return -1;
     }
+
+    return 0;
 }
 int  ftpSetupDataConnActive(int *datafd, unsigned long cltIp, unsigned short cltPort, unsigned short portScan)
 {
@@ -678,6 +717,7 @@ int  ftpSetupDataConnActive(int *datafd, unsigned long cltIp, unsigned short clt
     tv.tv_usec = 0;
     if((retVal = setsockopt(*datafd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv))) < 0){
         printf("Set socket rcvtimeo Error %d\n\r", retVal);
+        close(*datafd);
         return -1;
     }
 
@@ -696,7 +736,10 @@ int  ftpSetupDataConnActive(int *datafd, unsigned long cltIp, unsigned short clt
         printf("Cannot found a server port to use\n\r");
         return -1;
     }
+
+#if defined(VERBOSE)
     printf("use port %d to connect\n\r", portScan);
+#endif
 
 	//initiate data connection fd with client ip and client port             
     memset(&cliaddr, 0, sizeof(cliaddr));
@@ -706,10 +749,14 @@ int  ftpSetupDataConnActive(int *datafd, unsigned long cltIp, unsigned short clt
 
     if (connect(*datafd, (struct sockaddr *) &cliaddr, sizeof(cliaddr)) < 0){
         printf("Connect to client@%04X:%02X Failed\n\r", cliaddr.sin_addr.s_addr, cliaddr.sin_port);
+        close(*datafd);
     	return -1;
     }
 
+#if defined(VERBOSE)
     printf("Connected to client@%04X:%02X successfully\n\r", cliaddr.sin_addr.s_addr, cliaddr.sin_port);
+#endif
 
     return 0;
 }
+#endif

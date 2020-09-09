@@ -1,6 +1,5 @@
 import socket
 import time
-import pyautogui
 from pynput.mouse import Button, Controller
 import sys
 from array import array
@@ -27,10 +26,6 @@ while True:
                     data = conn.recv(10)
                     if data:
                         data = array('b', data)
-                        # print(data)
-                        # if data[0] != 0:
-                        # print(data)
-                        # pyautogui.move(*(data[:2]))
                         mouse.move(*(data[1:3]))
                         if data[0] & 0x04:
                             mouse.click(Button.left, 1)

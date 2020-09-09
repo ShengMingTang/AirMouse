@@ -26,8 +26,7 @@
 #include "pinmux.h"
 
 // function interface for routing I/O
+#warning "printf() is intercepted to UART_PRINT()"
 #define printf      UART_PRINT
-
-#define USE_FATFS
 
 #endif

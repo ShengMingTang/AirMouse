@@ -46,14 +46,6 @@ extern SemaphoreHandle_t semHidKickStarter;
 //                 EXTERN -- End
 //*****************************************************************************
 
-//*****************************************************************************
-//                 SYNCHRONIZATION OBJECTS -- Start
-//*****************************************************************************
-OsiSyncObj_t p2pKickStarter;
-//*****************************************************************************
-//                 SYNCHRONIZATION OBJECTS -- End
-//*****************************************************************************
-
 //****************************************************************************
 //
 //! \brief #could be more simplified
@@ -97,14 +89,19 @@ void P2PManagerTask(void *pvParameters)
                 UART_PRINT("Get IP address failed \n\r");
                 LOOP_FOREVER();
             }
-
-            // start up http server after connection is set
-            xSemaphoreGive(semFtpKickStarter);
-            xSemaphoreGive(semHidKickStarter);
-            // osi_SyncObjSignal(&httpKickStarter);
-
+            #if defined(USE_FTP)
+                osi_SyncObjSignal(&httpKickStarter);
+            #endif
+            #if defined(USE_FTP)
+                xSemaphoreGive(semFtpKickStarter);
+            #endif
+            #if defined(USE_HID)
+                xSemaphoreGive(semHidKickStarter);
+            #endif
             // wait until disconnected, disconnection should signal this
-            osi_SyncObjWait(&p2pKickStarter, OSI_WAIT_FOREVER);
+            while(IS_CONNECTED(g_ulStatus)){ // loop until disconnected
+                taskYIELD();
+            }
         }
     }while(1);
 }

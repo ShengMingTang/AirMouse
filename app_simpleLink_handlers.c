@@ -39,7 +39,6 @@
 #include "app_global_variables.h"
 #include "app_storage.h"
 
-extern OsiSyncObj_t p2pKickStarter;
 //*****************************************************************************
 // SimpleLink Asynchronous Event Handlers -- Start
 //*****************************************************************************
@@ -124,9 +123,6 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
             }
             memset(g_ucConnectionSSID,0,sizeof(g_ucConnectionSSID));
             memset(g_ucConnectionBSSID,0,sizeof(g_ucConnectionBSSID));
-
-            // #added
-            osi_SyncObjSignalFromISR(&p2pKickStarter);
         }
         break;
 

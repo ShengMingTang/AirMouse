@@ -45,7 +45,16 @@
 #include "ftp/ftp_server.h"
 #include "hid/hid.h"
 
+// source code routes
+#define USE_AP
+// #define USE_P2P
+#define USE_HID
+#define USE_FTP
+// #define USE_HTTP
+
+// hw settings
 #define SDHOST_CLK_SPEED 24000000
+
 //*****************************************************************************
 //                 GLOBAL VARIABLES -- Start
 //*****************************************************************************
@@ -58,6 +67,8 @@ int g_iSimplelinkRole = ROLE_INVALID;
 unsigned long  g_ulDeviceIp = 0;
 volatile unsigned long  g_ulStaIp = 0;
 unsigned char g_ucSSID[AP_SSID_LEN_MAX];
+// p2p
+char g_p2p_dev[MAXIMAL_SSID_LENGTH + 1];
 
 #if defined(ccs)
 extern void (* const g_pfnVectors[])(void);
@@ -66,34 +77,15 @@ extern void (* const g_pfnVectors[])(void);
 extern uVectorEntry __vector_table;
 #endif
 
-// p2p
-char g_p2p_dev[MAXIMAL_SSID_LENGTH + 1];
-
 //*****************************************************************************
 // Variable related to Connection status -- Start
 //*****************************************************************************
 volatile unsigned short g_usMCNetworkUstate = 0;
-
 int g_uiSimplelinkRole = ROLE_INVALID;
 unsigned int g_uiDeviceModeConfig = ROLE_STA; //default is STA mode
 volatile unsigned char g_ucConnectTimeout =0;
 //*****************************************************************************
 // Variable related to Connection status -- End
-//*****************************************************************************
-
-
-
-//*****************************************************************************
-//                 OSI INIT OBJ -- End
-//*****************************************************************************
-extern OsiSyncObj_t p2pKickStarter;
-extern OsiSyncObj_t httpKickStarter;
-
-extern StorageMsg_t pullMsg;
-
-
-//*****************************************************************************
-//                 OSI INIT OBJ -- End
 //*****************************************************************************
 
 void main(void)
@@ -193,19 +185,18 @@ void main(void)
     
     // //
     // // Create p2p(connection) management Task
-    // lRetVal = osi_SyncObjCreate(&p2pKickStarter);
-    // if(lRetVal != OSI_OK){
-    //     ERR_PRINT(lRetVal);
-    //     LOOP_FOREVER();
-    // }
-    // lRetVal = osi_TaskCreate(P2PManagerTask, (signed char*)"P2PManagerTask",
-    //     OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
-    // );
-    // if(lRetVal != OSI_OK){
-    //     ERR_PRINT(lRetVal);
-    //     LOOP_FOREVER();
-    // }
-
+#if defined(USE_P2P)
+    #warning "P2P is used"
+    lRetVal = osi_TaskCreate(P2PManagerTask, (signed char*)"P2PManagerTask",
+        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+    );
+    if(lRetVal != OSI_OK){
+        ERR_PRINT(lRetVal);
+        LOOP_FOREVER();
+    }
+#endif
+#if defined(USE_AP)
+    #warning "AP is used"
     lRetVal = osi_TaskCreate(APTask, (signed char*)"APTask",
         OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
     );
@@ -213,20 +204,22 @@ void main(void)
         ERR_PRINT(lRetVal);
         LOOP_FOREVER();
     }
+#endif
+#if defined(USE_FTP)
+    #warning "FTP is used"
+    ftpServerInit();
+    lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"FtpTask",
+        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+    );
+    if(lRetVal != OSI_OK){
+        ERR_PRINT(lRetVal);
+        LOOP_FOREVER();
+    }
+#endif
 
-    // ftpServerInit();
-    // lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"FtpTask",
-    //     OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
-    // );
-    // if(lRetVal != OSI_OK){
-    //     ERR_PRINT(lRetVal);
-    //     LOOP_FOREVER();
-    // }
-
-    /* imu */
-    //
-    // I2C Init
-    //
+    /* hid */
+#if defined(USE_HID)
+    #warning "HID is used"
     hidInit();
     lRetVal = osi_TaskCreate(hidTask, (signed char*)"hidTask",
         OSI_STACK_SIZE, NULL, 8, NULL
@@ -235,26 +228,25 @@ void main(void)
         ERR_PRINT(lRetVal);
         LOOP_FOREVER();
     }
+#endif
 
     //
     // Create HTTP Server Task
-    // lRetVal = osi_SyncObjCreate(&httpKickStarter);
-    // if(lRetVal != OSI_OK){
-    //     ERR_PRINT(lRetVal);
-    //     LOOP_FOREVER();
-    // }
-    // lRetVal = osi_TaskCreate(HTTPServerTask, (signed char*)"httpServer",
-    //     OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
-    // );
-    // if(lRetVal < 0){
-    //     ERR_PRINT(lRetVal);
-    //     LOOP_FOREVER();
-    // }
+#if defined(USE_HTTP)
+    #warning "HTTP is used"
+    lRetVal = osi_TaskCreate(HTTPServerTask, (signed char*)"httpServer",
+        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+    );
+    if(lRetVal < 0){
+        ERR_PRINT(lRetVal);
+        LOOP_FOREVER();
+    }
+#endif
 
     //
     // Init and Create Storage Tasks
     //*****************************************************************************
-    //              Custom Tasks -- End
+    //              Tasks -- End
     //*****************************************************************************
 
     //

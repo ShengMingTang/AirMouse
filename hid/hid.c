@@ -137,11 +137,13 @@ void hidTask(void *pvParameters)
                 printf("Hid connect Error %d retry every second\n\r", retVal);
                 close(fd);
                 vTaskDelay(pdMS_TO_TICKS(1000));
+                continue;
             }
             if((retVal = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv))) < 0){
                 printf("Set socket rcvtimeo Error %d\n\r", retVal);
                 close(fd);
                 vTaskDelay(pdMS_TO_TICKS(1000));
+                continue;
             }
         }while(retVal < 0);
         printf("Hid connected\n\r");

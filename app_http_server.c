@@ -51,7 +51,15 @@ OsiSyncObj_t httpKickStarter;
 //*****************************************************************************
 //                 SYNCHRONIZATION OBJECTS -- End
 //*****************************************************************************
-
+void HTTPServerInit()
+{
+    long lRetVal = -1;
+    lRetVal = osi_SyncObjCreate(&httpKickStarter);
+    if(lRetVal != OSI_OK){
+        ERR_PRINT(lRetVal);
+        LOOP_FOREVER();
+    }
+}
 //****************************************************************************
 //
 //! \brief                     Handles HTTP Server Task
@@ -68,24 +76,24 @@ void HTTPServerTask(void *pvParameters)
     long lRetVal = -1;
 
     while(osi_SyncObjWait(httpKickStarter, OSI_WAIT_FOREVER) == OSI_OK){
-      //Read Device Mode Configuration
-      ReadDeviceConfiguration();
+        //Read Device Mode Configuration
+        ReadDeviceConfiguration();
 
-      //Stop Internal HTTP Server
-      lRetVal = sl_NetAppStop(SL_NET_APP_HTTP_SERVER_ID);
-      if(lRetVal < 0)
-      {
-          ERR_PRINT(lRetVal);
-          LOOP_FOREVER();
-      }
+        //Stop Internal HTTP Server
+        lRetVal = sl_NetAppStop(SL_NET_APP_HTTP_SERVER_ID);
+        if(lRetVal < 0)
+        {
+            ERR_PRINT(lRetVal);
+            LOOP_FOREVER();
+        }
 
-      //Start Internal HTTP Server
-      lRetVal = sl_NetAppStart(SL_NET_APP_HTTP_SERVER_ID);
-      if(lRetVal < 0)
-      {
-          ERR_PRINT(lRetVal);
-          LOOP_FOREVER();
-      }
+        //Start Internal HTTP Server
+        lRetVal = sl_NetAppStart(SL_NET_APP_HTTP_SERVER_ID);
+        if(lRetVal < 0)
+        {
+            ERR_PRINT(lRetVal);
+            LOOP_FOREVER();
+        }
     }
 
     UART_PRINT("Http server task died...\n\r");
