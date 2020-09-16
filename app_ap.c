@@ -157,7 +157,7 @@ void APTask(void *pvParameters)
         while(!IS_IP_LEASED(g_ulStatus)){ // loop until connected
             taskYIELD();
         }
-#if defined(USE_FTP)
+#if defined(USE_HTTP)
         osi_SyncObjSignal(&httpKickStarter);
 #endif
 #if defined(USE_FTP)

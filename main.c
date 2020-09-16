@@ -44,16 +44,16 @@
 #include "app_ap.h"
 #include "ftp/ftp_server.h"
 #include "hid/hid.h"
-
-// source code routes
-#define USE_AP
-// #define USE_P2P
-#define USE_HID
-#define USE_FTP
-// #define USE_HTTP
-
+#include "main_config.h"
 // hw settings
 #define SDHOST_CLK_SPEED 24000000
+//*****************************************************************************
+//                 EXTERN -- Start
+//*****************************************************************************
+extern void SDHostIntHandler();
+//*****************************************************************************
+//                 EXTERN -- Start
+//*****************************************************************************
 
 //*****************************************************************************
 //                 GLOBAL VARIABLES -- Start
@@ -130,6 +130,11 @@ void main(void)
     //              FatFs -- Start
     //*****************************************************************************
 
+    // @@udma
+    // Initialize Udma
+    //
+    UDMAInit();
+
     //
     // Set the SD card clock as output pin
     //
@@ -164,6 +169,18 @@ void main(void)
     //
     MAP_SDHostSetExpClk(SDHOST_BASE,
                             MAP_PRCMPeripheralClockGet(PRCM_SDHOST),SDHOST_CLK_SPEED);
+
+    // @@udma
+    //
+    // Register Interrupt
+    //
+    MAP_SDHostIntRegister(SDHOST_BASE, SDHostIntHandler);
+
+    // @@udma
+    //
+    // Interrupt Enable
+    //
+    MAP_SDHostIntEnable(SDHOST_BASE, SDHOST_INT_DMARD | SDHOST_INT_DMAWR);
 
     //*****************************************************************************
     //              FatFs -- End

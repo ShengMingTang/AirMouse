@@ -1,6 +1,8 @@
 #ifndef APP_P2P_H_
 #define APP_P2P_H_
 
+#include "main_config.h"
+
 void P2PManagerTask(void * pvParameters);
 
 long WlanConnect();

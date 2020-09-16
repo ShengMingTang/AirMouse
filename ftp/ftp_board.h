@@ -16,6 +16,8 @@
 #include "prcm.h"
 #include "uart.h"
 #include "utils.h"
+#include "hw_mmchs.h" // @@udma
+#include "udma.h" // @@udma
 #include "sdhost.h"
 
 // common interface includes 

@@ -46,6 +46,115 @@
 #include "stdcmd.h"
 #include "utils.h"
 
+#warning "diskio.c is modified to udma version"
+// @@udma
+#include "hw_mmchs.h"
+#include "udma.h"
+#include "udma_if.h"
+#include "stdcmd.h"
+
+//*****************************************************************************
+//                 GLOBAL VARIABLES -- Start
+//*****************************************************************************
+// @@udma
+// static unsigned char g_ucDataBuff[512]; // @@ used only in demo
+static tBoolean bTransferDone;
+static tBoolean bIsRead;
+static unsigned long ulNofBlocks;
+static unsigned long *pulNxtBuff;
+#define CARD_BLK_SIZE_IN_BYTES 512
+
+//!
+void SDHostIntHandler()
+{
+    //
+    // Reduce the number of sectors remaining
+    //
+    ulNofBlocks = ulNofBlocks - 1;
+
+    //
+    // Clear the interrupt handler
+    //
+    MAP_SDHostIntClear(SDHOST_BASE, SDHOST_INT_DMARD|SDHOST_INT_DMAWR);
+
+    //
+    // Check if all sectors are transfered.
+    //
+    if( 0 != ulNofBlocks)
+    {
+        if(true == bIsRead)
+        {
+            if( UDMA_MODE_STOP == MAP_uDMAChannelModeGet(UDMA_CH23_SDHOST_RX))
+            {
+                //
+                // Configure the udma for a transfer
+                //
+                UDMASetupTransfer(UDMA_CH23_SDHOST_RX, UDMA_MODE_PINGPONG,
+                                  CARD_BLK_SIZE_IN_BYTES/4, UDMA_SIZE_32,
+                                  UDMA_ARB_512, (void *)(SDHOST_BASE + MMCHS_O_DATA),
+                                  UDMA_SRC_INC_NONE, pulNxtBuff, UDMA_DST_INC_32);
+
+            }
+            else
+            {
+                //
+                // Configure the udma for a transfer
+                //
+                UDMASetupTransfer(UDMA_CH23_SDHOST_RX|UDMA_ALT_SELECT, UDMA_MODE_PINGPONG,
+                                  CARD_BLK_SIZE_IN_BYTES/4, UDMA_SIZE_32,
+                                  UDMA_ARB_512, (void *)(SDHOST_BASE + MMCHS_O_DATA),
+                                  UDMA_SRC_INC_NONE, pulNxtBuff, UDMA_DST_INC_32);
+            }
+        }
+        else
+        {
+            if( UDMA_MODE_STOP == MAP_uDMAChannelModeGet(UDMA_CH24_SDHOST_TX))
+            {
+                //
+                // Configure the udma for a transfer
+                //
+                UDMASetupTransfer(UDMA_CH24_SDHOST_TX, UDMA_MODE_PINGPONG,
+                                  CARD_BLK_SIZE_IN_BYTES/4, UDMA_SIZE_32,
+                                  UDMA_ARB_512, pulNxtBuff, UDMA_SRC_INC_32,
+                                  (void *)(SDHOST_BASE + MMCHS_O_DATA), UDMA_DST_INC_NONE);
+
+            }
+            else
+            {
+                //
+                // Configure the udma for a transfer
+                //
+                UDMASetupTransfer(UDMA_CH24_SDHOST_TX|UDMA_ALT_SELECT, UDMA_MODE_PINGPONG,
+                                  CARD_BLK_SIZE_IN_BYTES/4, UDMA_SIZE_32,
+                                  UDMA_ARB_512, pulNxtBuff, UDMA_SRC_INC_32,
+                                  (void *)(SDHOST_BASE + MMCHS_O_DATA), UDMA_DST_INC_NONE);
+            }
+        }
+
+        //
+        // Set the next buffer pointer
+        //
+        pulNxtBuff = pulNxtBuff + CARD_BLK_SIZE_IN_BYTES/4;
+    }
+    else
+    {
+        //
+        // reset uDMA pointer to primary channel
+        //
+        MAP_uDMAChannelAttributeDisable(UDMA_CH24_SDHOST_TX,UDMA_ATTR_ALTSELECT);
+        MAP_uDMAChannelAttributeDisable(UDMA_CH23_SDHOST_RX,UDMA_ATTR_ALTSELECT);
+
+        //
+        // Indicate transfer complete
+        //
+        bTransferDone = true;
+    }
+}
+//*****************************************************************************
+//                 GLOBAL VARIABLES -- End
+//*****************************************************************************
+
+
 //*****************************************************************************
 // Macros
 //*****************************************************************************
@@ -463,6 +572,77 @@ DRESULT disk_read ( BYTE bDrive, BYTE* pBuffer, DWORD ulSectorNumber,
   //
   MAP_SDHostBlockCountSet(SDHOST_BASE,bSectorCount);
 
+  // @@udma
+  //
+  // Mark as read
+  //
+  {
+    bIsRead = true;
+
+    //
+    // Setup DMA Transfer
+    //
+    UDMASetupTransfer(UDMA_CH23_SDHOST_RX, UDMA_MODE_PINGPONG,
+                      CARD_BLK_SIZE_IN_BYTES/4, UDMA_SIZE_32,
+                      UDMA_ARB_512, (void *)(SDHOST_BASE + MMCHS_O_DATA),
+                      UDMA_SRC_INC_NONE, (void *)pBuffer, UDMA_DST_INC_32);
+
+    UDMASetupTransfer(UDMA_CH23_SDHOST_RX | UDMA_ALT_SELECT, UDMA_MODE_PINGPONG,
+                      CARD_BLK_SIZE_IN_BYTES/4, UDMA_SIZE_32, UDMA_ARB_512,
+                      (void *)(SDHOST_BASE + MMCHS_O_DATA), UDMA_SRC_INC_NONE,
+                      (pBuffer + CARD_BLK_SIZE_IN_BYTES), UDMA_DST_INC_32);
+
+    //
+    // Set the next buffer pointer
+    //
+    pulNxtBuff = (unsigned long *)(pBuffer + (CARD_BLK_SIZE_IN_BYTES * 2));
+
+    //
+    // Set number of sectors;
+    //
+    // ulNofBlocks = ulBlockCount; //@@original
+    ulNofBlocks = bSectorCount; //@@new
+
+
+    //
+    // Set the transfer done flag to false
+    //
+    bTransferDone = false;
+
+    //
+    // Send multi block read command to the card
+    //
+    // if( SendCmd(CMD_READ_MULTI_BLK|SDHOST_DMA_EN, ulBlockNo) == 0 ) // @@original
+    if( CardSendCmd(CMD_READ_MULTI_BLK|SDHOST_DMA_EN, ulSectorNumber) == 0 ) // @@new
+    {
+        //
+        // Wait for transfer complete
+        //
+        do
+        {
+
+        }while(!bTransferDone);
+
+        //
+        // Send multi block read stop command to the card
+        //
+        // SendCmd(CMD_STOP_TRANS,0); // @@original
+        CardSendCmd(CMD_STOP_TRANS,0);
+
+        //
+        // return success.
+        //
+        // return 0; // @original
+        return RES_OK; // @@new
+    }
+
+    //
+    // Return error
+    //
+    // return 1; // @@original
+    return RES_ERROR;
+  }
+/*// @@original
   //
   // Compute the number of words
   //
@@ -522,6 +702,7 @@ DRESULT disk_read ( BYTE bDrive, BYTE* pBuffer, DWORD ulSectorNumber,
   // return status
   //
   return Res;
+*/
 }
 
 //*****************************************************************************
@@ -567,7 +748,81 @@ DRESULT disk_write ( BYTE bDrive,const BYTE* pBuffer, DWORD ulSectorNumber,
   // Set the block count
   //
   MAP_SDHostBlockCountSet(SDHOST_BASE,bSectorCount);
+// @@new
+{
+  //
+  // Setup DMA Transfer
+  //
+  UDMASetupTransfer(UDMA_CH24_SDHOST_TX, UDMA_MODE_PINGPONG,
+                    CARD_BLK_SIZE_IN_BYTES/4, UDMA_SIZE_32, UDMA_ARB_512,
+                    (void *)pBuffer, UDMA_SRC_INC_32,
+                    (void *)(SDHOST_BASE + MMCHS_O_DATA), UDMA_DST_INC_NONE);
 
+  UDMASetupTransfer(UDMA_CH24_SDHOST_TX|UDMA_ALT_SELECT, UDMA_MODE_PINGPONG,
+                    CARD_BLK_SIZE_IN_BYTES/4, UDMA_SIZE_32, UDMA_ARB_512,
+                    (void *)(pBuffer + CARD_BLK_SIZE_IN_BYTES), UDMA_SRC_INC_32,
+                    (void *)(SDHOST_BASE + MMCHS_O_DATA), UDMA_DST_INC_NONE);
+
+  //
+  // Set the next buffer pointer
+  //
+  pulNxtBuff = (unsigned long *)(pBuffer + CARD_BLK_SIZE_IN_BYTES * 2);
+
+  //
+  // Set number of sectors;
+  //
+  // ulNofBlocks = ulBlockCount; // @original
+  ulNofBlocks = bSectorCount; // @new
+
+  //
+  // Set the transfer done flag to false
+  //
+  bTransferDone = false;
+
+
+  //
+  // Send multi block read command to the card
+  //
+  // if( SendCmd(CMD_WRITE_MULTI_BLK | SDHOST_DMA_EN, ulBlockNo) == 0 ) // @@original
+  if( CardSendCmd(CMD_WRITE_MULTI_BLK | SDHOST_DMA_EN, ulSectorNumber) == 0 ) // @@new
+  {
+      //
+      // Wait for transfer complete
+      //
+      do
+      {
+
+      }while(!bTransferDone);
+
+      //
+      // Wait for transfer completion.
+      //
+      while( !(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC) )
+      {
+
+      }
+
+      //
+      // Send multi block write stop command to the card
+      //
+      // SendCmd(CMD_STOP_TRANS,0); // @@original
+      CardSendCmd(CMD_STOP_TRANS,0); // @@new
+
+      //
+      // return
+      //
+      // return 0; // @@original
+      return RES_OK; // @@new
+    }
+
+    //
+    // Return error
+    //
+    // return 1; // @@original
+    return RES_ERROR; // @@new
+}
+// @@original
+/*  
   //
   // Compute the number of words
   //
@@ -653,6 +908,7 @@ DRESULT disk_write ( BYTE bDrive,const BYTE* pBuffer, DWORD ulSectorNumber,
   // return status
   //
   return Res;
+*/
 }
 
 

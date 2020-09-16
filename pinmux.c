@@ -60,7 +60,7 @@ PinMuxConfig(void)
     //
     MAP_PinModeSet(PIN_03, PIN_MODE_0);
     MAP_PinModeSet(PIN_05, PIN_MODE_0);
-    MAP_PinModeSet(PIN_06, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_06, PIN_MODE_0);
     MAP_PinModeSet(PIN_18, PIN_MODE_0);
     MAP_PinModeSet(PIN_21, PIN_MODE_0);
     MAP_PinModeSet(PIN_45, PIN_MODE_0);
@@ -105,12 +105,13 @@ PinMuxConfig(void)
     //
     // Configure PIN_63 for SDHost0 SDCARD_IRQ
     //
-    MAP_PinTypeSDHost(PIN_63, PIN_MODE_6);
+    // MAP_PinTypeSDHost(PIN_63, PIN_MODE_6);
 
     //
     // Configure PIN_64 for SDHost0 SDCARD_DATA
     //
-    MAP_PinTypeSDHost(PIN_64, PIN_MODE_6);
+    // MAP_PinTypeSDHost(PIN_64, PIN_MODE_6);
+    MAP_PinTypeSDHost(PIN_06, PIN_MODE_8);
 
     //
     // Configure PIN_07 for SDHost0 SDCARD_CLK
