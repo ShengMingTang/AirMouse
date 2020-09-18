@@ -2,11 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 // Simplelink includes
 #include "simplelink.h"
 #include "netcfg.h"
-
 //driverlib includes
 #include "hw_ints.h"
 #include "hw_types.h"
@@ -18,33 +16,22 @@
 #include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
-
-//Free_rtos/ti-rtos includes
-#include "osi.h"
-
 // common interface includes
 #include "gpio_if.h"
 #include "uart_if.h"
 #include "common.h"
-
 #include "smartconfig.h"
 #include "pinmux.h"
-
+// FreeRTOS includes
+#include <FreeRTOS.h>
+#include <task.h>
+#include <semphr.h>
 // custom includes
-#include "app_defines.h"
-#include "app_global_variables.h"
 #include "app_simplelink_config.h"
 #include "app_p2p.h"
-#include "ftp/ftp_server.h"
-//*****************************************************************************
-//                 EXTERN -- Start
-//*****************************************************************************
-extern OsiSyncObj_t httpKickStarter;
-extern SemaphoreHandle_t semFtpKickStarter;
-extern SemaphoreHandle_t semHidKickStarter;
-//*****************************************************************************
-//                 EXTERN -- End
-//*****************************************************************************
+
+extern volatile unsigned long  g_ulStatus; //SimpleLink Status
+char g_p2p_dev[MAXIMAL_SSID_LENGTH + 1];
 
 //****************************************************************************
 //
@@ -89,16 +76,9 @@ void P2PManagerTask(void *pvParameters)
                 UART_PRINT("Get IP address failed \n\r");
                 LOOP_FOREVER();
             }
-            #if defined(USE_FTP)
-                osi_SyncObjSignal(&httpKickStarter);
-            #endif
-            #if defined(USE_FTP)
-                xSemaphoreGive(semFtpKickStarter);
-            #endif
-            #if defined(USE_HID)
-                xSemaphoreGive(semHidKickStarter);
-            #endif
-            // wait until disconnected, disconnection should signal this
+
+            // @@ do something
+
             while(IS_CONNECTED(g_ulStatus)){ // loop until disconnected
                 taskYIELD();
             }

@@ -3,3 +3,9 @@ should be added if fatfs "default mode" is used
 
 ${CC3200_SDK_ROOT}/third_party/fatfs/ccs/Release/fatfs.a
 should be added if fatfs "default mode" is used
+
+#define USE_AP
+#define USE_P2P
+#define USE_FTP
+#define USE_HID
+#define USE_HTTP

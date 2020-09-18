@@ -1,15 +1,11 @@
 #include "ftp_server.h"
 
-SemaphoreHandle_t semFtpKickStarter;
 static SemaphoreHandle_t semTaskRunning;
 
 void ftpServerInit()
 {
     if(ftpStorageInit() < 0){
         printf("Storage Init Error\n\r");
-    }
-    if((semFtpKickStarter = xSemaphoreCreateCounting(1, 0)) == NULL){
-        printf("Create semFtp Error\n\r");
     }
     if((semTaskRunning = xSemaphoreCreateCounting(MAX_NUM_TASKS, MAX_NUM_TASKS)) == NULL){
         printf("Create semTaskRunning Error\n\r");
@@ -30,11 +26,13 @@ void ftpServerTask(void *pvParameters)
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	servaddr.sin_port        = htons((unsigned short)FTP_PORT);
 
-    xSemaphoreTake(semFtpKickStarter, portMAX_DELAY); // wait for IP layer task go first
+    // xSemaphoreTake(semFtpKickStarter, portMAX_DELAY); // wait for IP layer task go first
 
     // wait for connectio and create separate children task to handle each client
     while(1){
-        xSemaphoreTake(semTaskRunning, portMAX_DELAY); // limit max connection
+        // xSemaphoreTake(semTaskRunning, portMAX_DELAY); // limit max connection
+        printf("FTP delayed\n\r");
+        vTaskDelay(pdMS_TO_TICKS(1000));
 
         // open listening socket, task deleted on error
         if((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){

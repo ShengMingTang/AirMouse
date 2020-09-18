@@ -1,6 +1,9 @@
 #ifndef IMU_H
 #define IMU_H
 
+#include "bma222.h"
+#include "MPU6050.h"
+
 // hardware
 #define MOUSE_BTN_LEFT_PIN (22)
 #define MOUSE_BTN_RIGHT_PIN (13)

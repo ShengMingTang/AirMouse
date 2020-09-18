@@ -36,57 +36,15 @@
 #include "pinmux.h"
 
 //custom includes
-#include "app_defines.h"
 #include "app_simplelink_config.h"
 #include "app_p2p.h"
-#include "app_http_server.h"
-#include "app_storage.h"
 #include "app_ap.h"
 #include "ftp/ftp_server.h"
 #include "hid/hid.h"
-#include "main_config.h"
+
 // hw settings
 #define SDHOST_CLK_SPEED 24000000
-//*****************************************************************************
-//                 EXTERN -- Start
-//*****************************************************************************
 extern void SDHostIntHandler();
-//*****************************************************************************
-//                 EXTERN -- Start
-//*****************************************************************************
-
-//*****************************************************************************
-//                 GLOBAL VARIABLES -- Start
-//*****************************************************************************
-volatile unsigned long  g_ulStatus = 0;//SimpleLink Status
-unsigned long  g_ulPingPacketsRecv = 0; //Number of Ping Packets received
-unsigned long  g_ulGatewayIP = 0; //Network Gateway IP address
-unsigned char  g_ucConnectionSSID[SSID_LEN_MAX+1]; //Connection SSID
-unsigned char  g_ucConnectionBSSID[BSSID_LEN_MAX]; //Connection BSSID
-int g_iSimplelinkRole = ROLE_INVALID;
-unsigned long  g_ulDeviceIp = 0;
-volatile unsigned long  g_ulStaIp = 0;
-unsigned char g_ucSSID[AP_SSID_LEN_MAX];
-// p2p
-char g_p2p_dev[MAXIMAL_SSID_LENGTH + 1];
-
-#if defined(ccs)
-extern void (* const g_pfnVectors[])(void);
-#endif
-#if defined(ewarm)
-extern uVectorEntry __vector_table;
-#endif
-
-//*****************************************************************************
-// Variable related to Connection status -- Start
-//*****************************************************************************
-volatile unsigned short g_usMCNetworkUstate = 0;
-int g_uiSimplelinkRole = ROLE_INVALID;
-unsigned int g_uiDeviceModeConfig = ROLE_STA; //default is STA mode
-volatile unsigned char g_ucConnectTimeout =0;
-//*****************************************************************************
-// Variable related to Connection status -- End
-//*****************************************************************************
 
 void main(void)
 {
@@ -246,20 +204,6 @@ void main(void)
         LOOP_FOREVER();
     }
 #endif
-
-    //
-    // Create HTTP Server Task
-#if defined(USE_HTTP)
-    #warning "HTTP is used"
-    lRetVal = osi_TaskCreate(HTTPServerTask, (signed char*)"httpServer",
-        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
-    );
-    if(lRetVal < 0){
-        ERR_PRINT(lRetVal);
-        LOOP_FOREVER();
-    }
-#endif
-
     //
     // Init and Create Storage Tasks
     //*****************************************************************************

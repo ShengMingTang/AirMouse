@@ -35,7 +35,6 @@
 #include <event_groups.h>
 // custom includes
 #include "hid.h"
-#include "bma222.h"
 
 // extern
 extern volatile unsigned long  g_ulStaIp;
@@ -115,12 +114,57 @@ void hidTask(void *pvParameters)
     int retVal;
     struct timeval tv;
     char buff[MAXBUFF];
+    unsigned char ucRegOffset;
+    unsigned char ucRdLen;
+
 
     tv.tv_sec = 2; // End device must reply within this more second
     tv.tv_usec = 0;
 
-    xSemaphoreTake(semHidKickStarter, portMAX_DELAY); // wait for IP layer task go first
-    
+    // power up
+    aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
+    aucRdDataBuf[1] = 0x20; // cycle mode
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
+    // power up check
+    aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],1,0);
+    aucRdDataBuf[0] = 0;
+    I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0],1);
+    printf("Power check: %x", aucRdDataBuf[0]);
+    // DLPF to 1 (184 Hz acc, 188Hz gyro)
+    // aucRdDataBuf[0] = MPU6050_RA_CONFIG;
+    // aucRdDataBuf[1] = 0x00;
+    // I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
+    // div = gyro / 1
+    // aucRdDataBuf[0] = MPU6050_RA_SMPLRT_DIV;
+    // aucRdDataBuf[1] = 0x00;
+    // I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
+
+    vTaskDelay(pdMS_TO_TICKS(3000));
+
+
+    // while(1){
+    //     ucRegOffset = 0x02;
+    //     ucRdLen = 7;
+        
+    //     I2C_IF_Write(BMA222_TWI_ADDR,&ucRegOffset,1,0);
+    //     I2C_IF_Read(BMA222_TWI_ADDR, &aucRdDataBuf[0], ucRdLen);
+    //     // printf("BMA222:%f,%f,%f\n\r", (float)aucRdDataBuf[1]/64, (float)aucRdDataBuf[3]/64, (float)aucRdDataBuf[5]/64);
+        
+    //     ucRegOffset = MPU6050_RA_ACCEL_XOUT_H;
+    //     ucRdLen = 14;
+    //     I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&ucRegOffset,1,0);
+    //     I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0], ucRdLen);
+        
+    //     int a, b, c;
+    //     a = ((int)aucRdDataBuf[0] << 8 | aucRdDataBuf[1]);
+    //     b = ((int)aucRdDataBuf[2] << 8 | aucRdDataBuf[3]);
+    //     c = ((int)aucRdDataBuf[4] << 8 | aucRdDataBuf[5]);
+        
+    //     // printf("MPU:%f,%f,%f\n\r", (float)a/16384, (float)b/16384, (float)c/16384);
+    //     vTaskDelay(pdMS_TO_TICKS(500));
+    // }
+
     while(1){
         do{
             // init server addr
@@ -131,6 +175,7 @@ void hidTask(void *pvParameters)
             
             if((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
                 printf("open sender sock Error %d\n\r", fd);
+                vTaskDelay(pdMS_TO_TICKS(1000));
                 continue;
             }
             if((retVal = connect(fd, (struct sockaddr*)&servaddr, sizeof(servaddr))) < 0){
@@ -148,12 +193,9 @@ void hidTask(void *pvParameters)
         }while(retVal < 0);
         printf("Hid connected\n\r");
 
-        while(1){
-            // xSemaphoreTake(semImuReady, portMAX_DELAY);
-
-            
-            unsigned char ucRegOffset = 0x02;
-            unsigned char ucRdLen = 7;
+        while(1){            
+            ucRegOffset = 0x02;
+            ucRdLen = 7;
             // 
             // Write the register address to be read from.
             // Stop bit implicitly assumed to be 0.
@@ -164,7 +206,6 @@ void hidTask(void *pvParameters)
             // Read the specified length of data
             //
             I2C_IF_Read(BMA222_TWI_ADDR, &aucRdDataBuf[0], ucRdLen);
-            
             if((retVal = recv(fd, buff, sizeof(buff), 0)) < 0){
                 printf("Error on Recv confirm %d\n\r", retVal);
                 break;

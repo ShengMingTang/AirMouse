@@ -15,60 +15,20 @@
 #define ROLE_INVALID                    (-5)
 #define AUTO_CONNECTION_TIMEOUT_COUNT   (50)   /* 5 Sec */
 
-// WLAN defines
-#define AP_SSID "Air-Mouse"
 
-// P2P defines
-#define P2P_REMOTE_DEVICE   "remote-p2p-device"
-// #define P2P_DEVICE_NAME     "cc3200-p2p-device"
-#define P2P_DEVICE_NAME     "Air-Mouse"
-#define P2P_SECURITY_TYPE   SL_SEC_TYPE_P2P_PBC
-#define P2P_SECURITY_KEY    ""
-
-// #define P2P_CONFIG_VALUE    "1-0050F204-1" // in the format of category-OUI-category
-#define P2P_CONFIG_VALUE    "2-0050F204-2"
-#define Delay(x)            MAP_UtilsDelay(x * 8000)
-
-#define LISENING_CHANNEL    11
-#define REGULATORY_CLASS    81
-#define OPERATING_CHANNEL   6
-// #define TCP_PACKET_COUNT    1000
-// #define PORT_NUM            5001      /* Port to be used  by TCP server*/
-// #define BUF_SIZE            1400
-
-#define P2P_ROLE_TYPE_NEGOTIATE
-
-// Application specific status/error codes
-//typedef enum{
-//    // Choosing -0x7D0 to avoid overlap w/ host-driver's error codes
-//    LAN_CONNECTION_FAILED = -0x7D0,
-//    INTERNET_CONNECTION_FAILED = LAN_CONNECTION_FAILED - 1,
-//    DEVICE_NOT_IN_STATION_MODE = INTERNET_CONNECTION_FAILED - 1,
-//
-//    STATUS_CODE_MAX = -0xBB8
-//}e_AppStatusCodes;
-
-
-/* Application specific status/error codes */
-typedef enum{
-    // Choosing this number to avoid overlap w/ host-driver's error codes
-    NETWORK_CONNECTION_FAILED = -0x7D0,
-    P2P_CONFIG_FAILED = NETWORK_CONNECTION_FAILED - 1,
-    P2P_MODE_START_FAILED = P2P_CONFIG_FAILED - 1,
-    DEVICE_NOT_IN_STATION_MODE = P2P_MODE_START_FAILED - 1,
-    CLIENT_DISCONNECTED = DEVICE_NOT_IN_STATION_MODE -1,
-
-
-    FILE_ALREADY_EXIST = -0x7D0,
-    FILE_CLOSE_ERROR = FILE_ALREADY_EXIST - 1,
-    FILE_NOT_MATCHED = FILE_CLOSE_ERROR - 1,
-    FILE_OPEN_READ_FAILED = FILE_NOT_MATCHED - 1,
-    FILE_OPEN_WRITE_FAILED = FILE_OPEN_READ_FAILED -1,
-    FILE_READ_FAILED = FILE_OPEN_WRITE_FAILED - 1,
-    FILE_WRITE_FAILED = FILE_READ_FAILED - 1,
+// /* Application specific status/error codes */
+// typedef enum{
+//     // Choosing this number to avoid overlap w/ host-driver's error codes
+//     FILE_ALREADY_EXIST = -0x7D0,
+//     FILE_CLOSE_ERROR = FILE_ALREADY_EXIST - 1,
+//     FILE_NOT_MATCHED = FILE_CLOSE_ERROR - 1,
+//     FILE_OPEN_READ_FAILED = FILE_NOT_MATCHED - 1,
+//     FILE_OPEN_WRITE_FAILED = FILE_OPEN_READ_FAILED -1,
+//     FILE_READ_FAILED = FILE_OPEN_WRITE_FAILED - 1,
+//     FILE_WRITE_FAILED = FILE_READ_FAILED - 1,
     
-    STATUS_CODE_MAX = -0xBB8
-}e_AppStatusCodes;
+//     STATUS_CODE_MAX = -0xBB8
+// }e_AppStatusCodes;
 
 //union
 //{

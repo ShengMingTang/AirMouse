@@ -2,11 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 // Simplelink includes
 #include "simplelink.h"
 #include "netcfg.h"
-
 //driverlib includes
 #include "hw_ints.h"
 #include "hw_types.h"
@@ -18,10 +16,6 @@
 #include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
-
-//Free_rtos/ti-rtos includes
-#include "osi.h"
-
 // common interface includes
 #include "gpio_if.h"
 #include "uart_if.h"
@@ -31,12 +25,33 @@
 #include "pinmux.h"
 
 // custom includes
-#include "app_defines.h"
-#include "app_global_variables.h"
+#include "app_simplelink_config.h"
 
 //*****************************************************************************
-// Variable related to Connection status -- End
+// Variable related to Connection status
 //*****************************************************************************
+volatile unsigned long  g_ulStatus = 0;//SimpleLink Status
+unsigned long  g_ulPingPacketsRecv = 0; //Number of Ping Packets received
+unsigned long  g_ulGatewayIP = 0; //Network Gateway IP address
+unsigned char  g_ucConnectionSSID[SSID_LEN_MAX+1]; //Connection SSID
+unsigned char  g_ucConnectionBSSID[BSSID_LEN_MAX]; //Connection BSSID
+int g_iSimplelinkRole = ROLE_INVALID;
+unsigned long  g_ulDeviceIp = 0;
+volatile unsigned long  g_ulStaIp = 0;
+unsigned char g_ucSSID[AP_SSID_LEN_MAX];
+
+#if defined(ccs)
+extern void (* const g_pfnVectors[])(void);
+#endif
+#if defined(ewarm)
+extern uVectorEntry __vector_table;
+#endif
+
+volatile unsigned short g_usMCNetworkUstate = 0;
+int g_uiSimplelinkRole = ROLE_INVALID;
+unsigned int g_uiDeviceModeConfig = ROLE_STA; //default is STA mode
+volatile unsigned char g_ucConnectTimeout =0;
+
 //*****************************************************************************
 //
 //! Application startup display on UART
@@ -261,15 +276,18 @@ long ConfigureSimpleLinkToDefaultState()
 //****************************************************************************
 void ReadDeviceConfiguration()
 {
+    #warning "ReadDeviceConfiguration always read as STA"
+    g_uiDeviceModeConfig = ROLE_STA;
+    /*
     unsigned int uiGPIOPort;
     unsigned char pucGPIOPin;
     unsigned char ucPinValue;
 
-        //Read GPIO
+    //Read GPIO
     GPIO_IF_GetPortNPin(SH_GPIO_3,&uiGPIOPort,&pucGPIOPin);
     ucPinValue = GPIO_IF_Get(SH_GPIO_3,uiGPIOPort,pucGPIOPin);
 
-        //If Connected to VCC, Mode is AP
+    //If Connected to VCC, Mode is AP
     if(ucPinValue == 1)
     {
             //AP Mode
@@ -280,6 +298,7 @@ void ReadDeviceConfiguration()
             //STA Mode
             g_uiDeviceModeConfig = ROLE_STA;
     }
+    */
 }
 
 //****************************************************************************
@@ -311,7 +330,7 @@ signed long DisplayIP()
                                         &len,(unsigned char *)&ipV4);
 #else
         lRetVal = sl_NetCfgGet(SL_IPV4_STA_P2P_CL_GET_INFO,&dhcpIsOn,
-                                                &len,(unsigned char *)&ipV4)
+                                                &len,(unsigned char *)&ipV4);
 #endif
         ASSERT_ON_ERROR(lRetVal);
 

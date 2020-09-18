@@ -35,9 +35,18 @@
 #include <projdefs.h>
 #include <task.h>
 #include <semphr.h>
-// FreeRTOS includes
-#include "app_global_variables.h"
-#include "app_storage.h"
+
+extern volatile unsigned long  g_ulStatus;//SimpleLink Status
+extern unsigned char  g_ucConnectionSSID[SSID_LEN_MAX+1]; //Connection SSID
+extern unsigned char  g_ucConnectionBSSID[BSSID_LEN_MAX]; //Connection BSSID
+extern char g_p2p_dev[MAXIMAL_SSID_LENGTH + 1];
+extern unsigned long  g_ulDeviceIp;
+extern unsigned long  g_ulStaIp;
+extern unsigned long  g_ulGatewayIP; //Network Gateway IP address
+
+// extern unsigned long  g_ulPingPacketsRecv; //Number of Ping Packets received
+// extern int g_iSimplelinkRole;
+// extern unsigned char g_ucSSID[AP_SSID_LEN_MAX];
 
 //*****************************************************************************
 // SimpleLink Asynchronous Event Handlers -- Start
@@ -361,5 +370,13 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
     //
     // This application doesn't work w/ socket - Events are not expected
     //
+
+}
+//*****************************************************************************
+// HTTP Server callback hookup function
+//*****************************************************************************
+void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pHttpEvent,
+                                  SlHttpServerResponse_t *pHttpResponse)
+{
 
 }

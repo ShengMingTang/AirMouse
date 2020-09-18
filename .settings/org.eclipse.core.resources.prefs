@@ -1,8 +1,6 @@
 eclipse.preferences.version=1
 encoding//Debug/FreeRTOS/subdir_rules.mk=UTF-8
 encoding//Debug/FreeRTOS/subdir_vars.mk=UTF-8
-encoding//Debug/cJSON/subdir_rules.mk=UTF-8
-encoding//Debug/cJSON/subdir_vars.mk=UTF-8
 encoding//Debug/fatfs/subdir_rules.mk=UTF-8
 encoding//Debug/fatfs/subdir_vars.mk=UTF-8
 encoding//Debug/ftp/subdir_rules.mk=UTF-8
@@ -14,5 +12,3 @@ encoding//Debug/objects.mk=UTF-8
 encoding//Debug/sources.mk=UTF-8
 encoding//Debug/subdir_rules.mk=UTF-8
 encoding//Debug/subdir_vars.mk=UTF-8
-encoding//Debug/web/server/node_modules/term-size/vendor/windows/subdir_rules.mk=UTF-8
-encoding//Debug/web/server/node_modules/term-size/vendor/windows/subdir_vars.mk=UTF-8

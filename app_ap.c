@@ -2,11 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 // Simplelink includes
 #include "simplelink.h"
 #include "netcfg.h"
-
 //driverlib includes
 #include "hw_ints.h"
 #include "hw_types.h"
@@ -18,28 +16,21 @@
 #include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
-
-//Free_rtos/ti-rtos includes
-#include "osi.h"
-
+// FreeRTOS includes
+#include <FreeRTOS.h>
+#include <task.h>
+#include <semphr.h>
 // common interface includes
 #include "gpio_if.h"
 #include "uart_if.h"
 #include "common.h"
-
 #include "smartconfig.h"
 #include "pinmux.h"
-
 // custom includes
-#include "app_defines.h"
-#include "app_global_variables.h"
 #include "app_simplelink_config.h"
 #include "app_ap.h"
-#include "ftp/ftp_server.h"
 
-extern OsiSyncObj_t httpKickStarter;
-extern SemaphoreHandle_t semFtpKickStarter;
-extern SemaphoreHandle_t semHidKickStarter;
+extern volatile unsigned long  g_ulStatus;//SimpleLink Status
 
 //****************************************************************************
 //
@@ -157,27 +148,11 @@ void APTask(void *pvParameters)
         while(!IS_IP_LEASED(g_ulStatus)){ // loop until connected
             taskYIELD();
         }
-#if defined(USE_HTTP)
-        osi_SyncObjSignal(&httpKickStarter);
-#endif
-#if defined(USE_FTP)
-        xSemaphoreGive(semFtpKickStarter);
-#endif
-#if defined(USE_HID)
-        xSemaphoreGive(semHidKickStarter);
-#endif
+
+        // @@ do something 
+
         while(IS_IP_LEASED(g_ulStatus)){ // loop until disconnected
             taskYIELD();
         }
     }
-
-    /*  
-    // revert to STA mode
-    lRetVal = sl_WlanSetMode(ROLE_STA);
-    if(lRetVal < 0)
-    {
-      ERR_PRINT(lRetVal);
-      LOOP_FOREVER();
-    }
-    */
 }

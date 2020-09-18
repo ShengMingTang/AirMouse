@@ -1,5 +1,8 @@
 #ifndef APP_AP_H_
 #define APP_AP_H_
-#include "main_config.h"
+
+#define AP_SSID "Air-Mouse"
+
 void APTask(void * pvParameters);
+
 #endif /* APP_AP_H_ */

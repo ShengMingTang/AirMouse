@@ -5,24 +5,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 // FreeRTOS includes
 #include <FreeRTOS.h>
 #include <projdefs.h>
 #include <task.h>
 #include <semphr.h>
 #include <event_groups.h>
-
 // fatfs includes
 #include <ff.h>
-
 // board dependent includes
 #include "ftp_board.h" // provide interface between bsd APIs and simplink APIs
 
 /* source code build route */
 #define VERBOSE
 // #define TEST
-#define PIPEPLINED // defined then use pipeline scheme
+// #define PIPEPLINED // defined then use pipeline scheme
 // #define SUPPORT_ACTIVE_CONN
 
 // warnings
