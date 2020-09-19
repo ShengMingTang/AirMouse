@@ -88,8 +88,8 @@ int ftpStorageRetr(int connfd, int datafd, char *path)
 #endif
 
     // sanity check
-    if(f_open(&fp, path, FA_READ) != FR_OK){
-        printf("Open %s Error %d\n\r", path);
+    if((res = f_open(&fp, path, FA_READ)) != FR_OK){
+        printf("Open %s Error %d\n\r", path, res);
         if((retVal = send(connfd, RESP_550_REQ_NOT_TAKEN, strlen(RESP_550_REQ_NOT_TAKEN), 0)) < 0){
             printf("Send 550 Error %d\n\r", retVal);
         }
@@ -106,12 +106,12 @@ int ftpStorageRetr(int connfd, int datafd, char *path)
     while(!f_eof(&fp) && (retVal >= 0) && (res == FR_OK)){
         if((res = f_read(&fp, buff, sizeof(buff), &btf)) != FR_OK){
             printf("f_read Error %d\n\r", res);
-            return -1;
+            break;
         }
         if((retVal = send(datafd, buff, btf, 0)) < 0){
             if(retVal != EAGAIN){
                 printf("send %d bytes Error %d\n\r", btf, retVal);
-                return -1;
+                break;
             }
             // EAGAIN is Okay
             // else{} is not neccessary

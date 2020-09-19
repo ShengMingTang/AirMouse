@@ -151,7 +151,7 @@ void APTask(void *pvParameters)
 
         // @@ do something 
 
-        while(IS_IP_LEASED(g_ulStatus)){ // loop until disconnected
+        while(IS_CONNECTED(g_ulStatus)){ // loop until disconnected
             taskYIELD();
         }
     }

@@ -58,14 +58,15 @@ extern unsigned long  g_ulDeviceIp;
 #define SERVER_STACK_SIZE (1024)
 #define CONN_STACK_SIZE (3072)
 #define STR_STCK_SIZE (512)
-#define DATA_TASK_PRIOR (1)
-#define STR_TASK_PRIOR (1)
+#define DATA_TASK_PRIOR (8)
+#define STR_TASK_PRIOR (8)
 // socket options
 #define FTP_PORT (21)
-#define CONN_SOCK_TIMEOUT (60)
+#define CONN_SOCK_TIMEOUT (10)
 #define DATA_SOCK_TIMEOUT (3)
 #define INV_CMD_TIMES (5) // max number of invalud command a client can send
 #define SOCK_BREAK_MS (50)
+#define PASV_TRY_TIMES (3)
 // timeout for event wait
 #define FILSTR_EVENT_WAIT_MS (2000)
 

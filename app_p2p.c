@@ -46,28 +46,28 @@ void P2PManagerTask(void *pvParameters)
     long lRetVal = -1;
 
     UART_PRINT("Scan Wi-FI direct device in your handheld device\n\r");
+    // Initializing the CC3200 device
+    lRetVal = StartDeviceInP2P();
+    if(lRetVal < 0)
+    {
+        UART_PRINT("Start Device in P2P mode failed \n\r");
+        LOOP_FOREVER();
+    }
+
+    lRetVal = P2PConfiguration();
+    if(lRetVal < 0)
+    {
+        UART_PRINT("Setting P2P configuration failed\n\r");
+        LOOP_FOREVER();
+    }
     
     /* Connect to p2p device (keep trying) */
     do{
-        // Initializing the CC3200 device
-        lRetVal = StartDeviceInP2P();
-        if(lRetVal < 0)
-        {
-            UART_PRINT("Start Device in P2P mode failed \n\r");
-            LOOP_FOREVER();
-        }
-
-        lRetVal = P2PConfiguration();
-        if(lRetVal < 0)
-        {
-            UART_PRINT("Setting P2P configuration failed\n\r");
-            LOOP_FOREVER();
-        }
         UART_PRINT("Connecting...\n\r");
         lRetVal = WlanConnect();
         if(lRetVal < 0){ // connection failed
             UART_PRINT("Connection failed, sleep for 1000 ms\n\r");
-            osi_Sleep(1000);
+            vTaskDelay(pdMS_TO_TICKS(1000));
         }
         else{
             UART_PRINT("Connected\n\r");
@@ -130,7 +130,7 @@ long WlanConnect()
                            0, &secParams, 0);
     ASSERT_ON_ERROR(lRetVal);
 
-#ifdef P2P_ROLE_TYPE_NEGOTIATE
+#if P2P_ROLE == SL_P2P_ROLE_CLIENT
     while(! IS_IP_ACQUIRED(g_ulStatus))
 #else
     while(! IS_IP_LEASED(g_ulStatus))
@@ -142,7 +142,8 @@ long WlanConnect()
         if(IS_CONNECT_FAILED(g_ulStatus))
         {
             // Error, connection is failed
-            ASSERT_ON_ERROR(NETWORK_CONNECTION_FAILED);
+            // ASSERT_ON_ERROR(NETWORK_CONNECTION_FAILED);
+            ERR_PRINT(NETWORK_CONNECTION_FAILED); // @@ added
         }
     }
 
@@ -236,16 +237,17 @@ long P2PConfiguration()
 
     // Set any p2p option (SL_CONNECTION_POLICY(0,0,0,any_p2p,0)) to connect to
     // first available p2p device
-    lRetVal = sl_WlanPolicySet(SL_POLICY_CONNECTION,SL_CONNECTION_POLICY(1,0,0,0,0),NULL,0);
+    // lRetVal = sl_WlanPolicySet(SL_POLICY_CONNECTION,SL_CONNECTION_POLICY(1,0,0,0,0),NULL,0);
+    lRetVal = sl_WlanPolicySet(SL_POLICY_CONNECTION,SL_CONNECTION_POLICY(0,0,0,1,0),NULL,0);
     ASSERT_ON_ERROR(lRetVal);
 
-    // Set the negotiation role (SL_P2P_ROLE_NEGOTIATE).
+    // Set the negotiation role (P2P_ROLE).
     // CC3200 will negotiate with remote device GO/client mode.
     // Other valid options are:
     //             - SL_P2P_ROLE_GROUP_OWNER
     //             - SL_P2P_ROLE_CLIENT
-    lRetVal = sl_WlanPolicySet(SL_POLICY_P2P, SL_P2P_POLICY(SL_P2P_ROLE_NEGOTIATE,
-                                   SL_P2P_NEG_INITIATOR_ACTIVE),NULL,0);
+    lRetVal = sl_WlanPolicySet(SL_POLICY_P2P, SL_P2P_POLICY(P2P_ROLE,
+                                   P2P_NEG_INITIATOR),NULL,0);
     ASSERT_ON_ERROR(lRetVal);
 
     // Set P2P Device name
@@ -256,7 +258,7 @@ long P2PConfiguration()
 
     // Set P2P device type
     lRetVal = sl_WlanSet(SL_WLAN_CFG_P2P_PARAM_ID, WLAN_P2P_OPT_DEV_TYPE,
-                         strlen(P2P_CONFIG_VALUE), (unsigned char*)P2P_CONFIG_VALUE);
+                         strlen(P2P_DEVICE_TYPE), (unsigned char*)P2P_DEVICE_TYPE);
     ASSERT_ON_ERROR(lRetVal);
 
     // setting P2P channel parameters

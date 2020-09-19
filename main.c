@@ -158,19 +158,18 @@ void main(void)
         LOOP_FOREVER();
     }
     
+#ifndef USE_AP
     // //
     // // Create p2p(connection) management Task
-#if defined(USE_P2P)
     #warning "P2P is used"
     lRetVal = osi_TaskCreate(P2PManagerTask, (signed char*)"P2PManagerTask",
-        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+        OSI_STACK_SIZE, NULL, 8, NULL
     );
     if(lRetVal != OSI_OK){
         ERR_PRINT(lRetVal);
         LOOP_FOREVER();
     }
-#endif
-#if defined(USE_AP)
+#else
     #warning "AP is used"
     lRetVal = osi_TaskCreate(APTask, (signed char*)"APTask",
         OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
@@ -180,11 +179,12 @@ void main(void)
         LOOP_FOREVER();
     }
 #endif
+
 #if defined(USE_FTP)
     #warning "FTP is used"
     ftpServerInit();
     lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"FtpTask",
-        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
+        OSI_STACK_SIZE, NULL, 8, NULL
     );
     if(lRetVal != OSI_OK){
         ERR_PRINT(lRetVal);

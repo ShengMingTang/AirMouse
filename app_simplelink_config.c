@@ -325,7 +325,7 @@ signed long DisplayIP()
         SlNetCfgIpV4Args_t ipV4 = {0};
 
         // Get the IP address of device
-#ifdef P2P_ROLE_TYPE_NEGOTIATE
+#if P2P_ROLE == SL_P2P_ROLE_GROUP_OWNER
         lRetVal = sl_NetCfgGet(SL_IPV4_AP_P2P_GO_GET_INFO,&dhcpIsOn,
                                         &len,(unsigned char *)&ipV4);
 #else

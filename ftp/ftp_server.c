@@ -1,14 +1,11 @@
 #include "ftp_server.h"
 
-static SemaphoreHandle_t semTaskRunning;
-
+static int ind[MAX_NUM_TASKS]; // indicies 
+static volatile int socks[MAX_NUM_TASKS] = {0}; // the ith task accesses socks[i]
 void ftpServerInit()
 {
     if(ftpStorageInit() < 0){
         printf("Storage Init Error\n\r");
-    }
-    if((semTaskRunning = xSemaphoreCreateCounting(MAX_NUM_TASKS, MAX_NUM_TASKS)) == NULL){
-        printf("Create semTaskRunning Error\n\r");
     }
 }
 void ftpServerTask(void *pvParameters)
@@ -18,73 +15,76 @@ void ftpServerTask(void *pvParameters)
     struct sockaddr_in	servaddr;
     // local
     int retVal;
-    int param = 0; // parameter for child connTask
+    int i;
+
+    // create all tasks
+    for(i = 0; i < MAX_NUM_TASKS; i++){
+        ind[i] = i;
+        if((retVal = xTaskCreate(ftpConnTask, "", CONN_STACK_SIZE, (void*)(&(ind[i])), DATA_TASK_PRIOR, NULL)) != pdPASS){
+            printf("Create Conn task Error %d\n\r", retVal);
+            while(1) {} // stuck
+        }
+    }
 
     // init server addr
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family      = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	servaddr.sin_port        = htons((unsigned short)FTP_PORT);
-
-    // xSemaphoreTake(semFtpKickStarter, portMAX_DELAY); // wait for IP layer task go first
-
-    // wait for connectio and create separate children task to handle each client
-    while(1){
-        // xSemaphoreTake(semTaskRunning, portMAX_DELAY); // limit max connection
-        printf("FTP delayed\n\r");
+    // open listening socket
+    while((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+        printf("open FTP Socket Error %d\r\n", listenfd);
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+    // bind
+    while(retVal = bind(listenfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
+        printf("bind Socket Error %d\r\n", retVal);
+        // close(listenfd);
         vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+    while(retVal = listen(listenfd, LISTENQ) < 0){
+        printf("listen Socket Error %d\r\n", retVal);
+        // close(listenfd);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 
-        // open listening socket, task deleted on error
-        if((listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-            printf("listen Socket Error %d\r\n", listenfd);
-            continue;
-        }
-        // bind
-        if(retVal = bind(listenfd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
-            printf("bind Socket Error %d\r\n", retVal);
-            close(listenfd);
-            continue;
-        }
-        if(retVal = listen(listenfd, LISTENQ) < 0){
-            printf("listen Socket Error %d\r\n", retVal);
-            close(listenfd);
-            continue;
-        }
+    // wait for connection and kickstart subtasks or reject
+    while(1){
         // ready to accept connection
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
-#if defined(VERBOSE)
-        printf("New Client Detected ...\n\r");
-#endif
-        // close listening socket immediately to avoid memory leak on task deletion
-        close(listenfd);
 
         // check connfd is valid
         if(connfd < 0){
             printf("accept Socket error %d, continue listening\n\r", connfd);
-            xSemaphoreGive(semTaskRunning);
         }
         else{ // on receiving a connection request
-            while(param){} // loop until child task set this to 0, stuck only when multiple clients try to connect
-
-            param = connfd; // connfd is closed by its children
-            if((retVal = xTaskCreate(ftpConnTask, "", CONN_STACK_SIZE, (void*)(&param), DATA_TASK_PRIOR, NULL)) != pdPASS){
-                printf("Create Conn task Error %d\n\r", retVal);
-                xSemaphoreGive(semTaskRunning);
+            #if defined(VERBOSE)
+                printf("New Client Detected ...\n\r");
+            #endif
+            i = 0;
+            while(socks[i] && i < MAX_NUM_TASKS) {i++;} // i is the first available task
+            if(i == MAX_NUM_TASKS){ // no available task
+                if((retVal = send(connfd, RESP_421_SRV_NOT_AVAI, strlen(RESP_421_SRV_NOT_AVAI), 0)) < 0){
+                    printf("Send Load full Error %d\n\r", retVal);
+                }
             }
-            
+            else{ // kickstart task i
+                socks[i] = connfd;
+            }            
         }
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 void ftpConnTask(void *pvParameters)
 {
     // socket
-    int connfd = *((int*)(pvParameters));
-    int datafd = -1;
+    int connfd;
+    int datafd;
     struct timeval tv;
 #if defined(SUPPORT_ACTIVE_CONN)
     unsigned long cltIp, cltPort;
 #endif
-    unsigned long portScan = 5001; // port scan from 5001 down ward
+    unsigned long portScan; // port scan from 5001 down ward
     // command
     char recvline[MAXLINE];
     char *scmd, *arg;
@@ -97,204 +97,208 @@ void ftpConnTask(void *pvParameters)
     int retVal;
     int done = 0; // 0 for enter loop, 1 on break the loop
     int isConnOpen = 0; // 1 for data connection is open
+    int ind = *((int*)pvParameters); // index to socks array
     
-    // protocol between task creator and task itself
-    *((int*)pvParameters) = 0;
-
-    // configure socket, won't enter loop if error
-    tv.tv_sec = CONN_SOCK_TIMEOUT;
-    tv.tv_usec = 0;
-    if((retVal = setsockopt(connfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv))) < 0){
-        printf("Set socket rcvtimeo Error %d\n\r", retVal);
-        done = 1;
-    }
-    if((retVal = send(connfd, RESP_220_SRV_READY, strlen(RESP_220_SRV_READY), 0)) < 0){
-        printf("Greeting send Error %d \n\r");
-        done = 1;
-    }
-
-    while(!done){
-        // wait for data conn port
-        if((retVal = recv(connfd, recvline, sizeof(recvline), 0)) < 0){
-            if(retVal == EAGAIN){ // timedout
-                printf("Connection timeout leave\n\r");
-                done = 1;
-            }
-            else{ // unrecoverable error
-                printf("Conn recv Error %d\n\r", retVal);
-                close(connfd);
-                break;
-            }
+    // main loop
+    while(1){
+        done = 0, isConnOpen = 0;
+        datafd = -1, portScan = 5001;
+        connfd = socks[ind];
+        if(connfd == 0){ // no work, keep waiting
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            continue;
         }
-        recvline[retVal - 2] = '\0'; // close that line
-
-#if defined(VERBOSE)
-        printf("Received : \"%s\"\n\r", recvline);
-#endif
-        scmd = strtok(recvline, " \0"); // strtok across scopes
-        ftpGetCmd(scmd, &cmd);
-        arg = strtok(NULL, "\0");
-#if defined(VERBOSE)
-        printf("cmd: %d\n\r", cmd);
-#endif
-        switch (cmd)
-        {
-            /* user */
-            case CMD_USER:{
-                if(ftpProcessUser(connfd, arg, user))
-                    done = 1;
-                break;
-            }
-            case CMD_PASS:{
-                if(ftpProcessPass(connfd, user, arg))
-                    done = 1;
-                break;
-            }
-            case CMD_QUIT:{ // exit anyway
-                ftpProcessQuit(connfd);
-                done = 1;
-#if defined(VERBOSE)
-                printf("%s quits\n\r", user);
-#endif
-                break;
-            }
-            /* file operation */
-            case CMD_RETR:{
-                if(isConnOpen){
-                    isConnOpen = 0;
-                    if(ftpProcessRetr(connfd, datafd, arg))
-                        done = 1;
+        // kickstarted
+        // configure socket, won't enter loop if error
+        tv.tv_sec = CONN_SOCK_TIMEOUT;
+        tv.tv_usec = 0;
+        if((retVal = setsockopt(connfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv))) < 0){
+            printf("Set socket rcvtimeo Error %d\n\r", retVal);
+            done = 1;
+        }
+        if((retVal = send(connfd, RESP_220_SRV_READY, strlen(RESP_220_SRV_READY), 0)) < 0){
+            printf("Greeting send Error %d \n\r");
+            done = 1;
+        }
+        while(!done){
+            // wait for data conn port
+            if((retVal = recv(connfd, recvline, sizeof(recvline), 0)) < 0){
+                if(retVal == EAGAIN){ // timedout
+                    printf("Connection timeout leave\n\r");
+                    break;
                 }
-                else{
-                    printf("Conn not open\n\r");
-                    if((retVal = send(connfd, RESP_503_BAD_SEQ, strlen(RESP_503_BAD_SEQ), 0)) < 0){
-                       printf("Send 503 Error %d\n\r", retVal);
-                       done = 1;
+                else{ // unrecoverable error
+                    printf("Conn recv Error %d\n\r", retVal);
+                    close(connfd);
+                    break;
+                }
+            }
+            recvline[retVal - 2] = '\0'; // close that line
+            #if defined(VERBOSE)
+                printf("Received : \"%s\"\n\r", recvline);
+            #endif
+            scmd = strtok(recvline, " \0"); // strtok across scopes
+            ftpGetCmd(scmd, &cmd);
+            arg = strtok(NULL, "\0");
+            #if defined(VERBOSE)
+                printf("cmd: %d\n\r", cmd);
+            #endif
+            switch (cmd){
+                /* user */
+                case CMD_USER:{
+                    if(ftpProcessUser(connfd, arg, user))
+                        done = 1;
+                    break;
+                }
+                case CMD_PASS:{
+                    if(ftpProcessPass(connfd, user, arg))
+                        done = 1;
+                    break;
+                }
+                case CMD_QUIT:{ // exit anyway
+                    ftpProcessQuit(connfd);
+                    done = 1;
+    #if defined(VERBOSE)
+                    printf("%s quits\n\r", user);
+    #endif
+                    break;
+                }
+                /* file operation */
+                case CMD_RETR:{
+                    if(isConnOpen){
+                        isConnOpen = 0;
+                        if(ftpProcessRetr(connfd, datafd, arg))
+                            done = 1;
                     }
-                }
-                break;
-            }
-            case CMD_STOR:{
-                if(isConnOpen){
-                    isConnOpen = 0;
-                    if(ftpProcessStor(connfd, datafd, arg))
+                    else{
+                        printf("Conn not open\n\r");
+                        if((retVal = send(connfd, RESP_503_BAD_SEQ, strlen(RESP_503_BAD_SEQ), 0)) < 0){
+                        printf("Send 503 Error %d\n\r", retVal);
                         done = 1;
-                }
-                else{
-                    printf("Conn not open\n\r");
-                    if((retVal = send(connfd, RESP_503_BAD_SEQ, strlen(RESP_503_BAD_SEQ), 0)) < 0){
-                       printf("Send 503 Error %d\n\r", retVal);
-                       done = 1;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
-            case CMD_DELE:{
-                if(ftpProcessDele(connfd, datafd, arg))
-                    done = 1;
-                break;
-            }
-            case CMD_RNFR:{
-                if(ftpProcessRnfr(connfd, datafd, arg, rn))
-                    done = 1;
-                break;
-            }
-            case CMD_RNTO:{
-                if(ftpProcessRnto(connfd, datafd, arg, rn))
-                    done = 1;
-                break;
-            }
-            /* direcotry */
-            case CMD_LIST:{
-                if(isConnOpen){
-                    isConnOpen = 0;
-                    if(ftpProcessList(connfd, datafd, arg))
-                        done = 1;
-                }
-                else{
-                    printf("Conn not open\n\r");
-                    if((retVal = send(connfd, RESP_503_BAD_SEQ, strlen(RESP_503_BAD_SEQ), 0)) < 0){
-                       printf("Send 503 Error %d\n\r", retVal); 
-                       done = 1;
+                case CMD_STOR:{
+                    if(isConnOpen){
+                        isConnOpen = 0;
+                        if(ftpProcessStor(connfd, datafd, arg))
+                            done = 1;
                     }
-                }
-                break;
-            }
-            case CMD_PWD:{
-                if(ftpProcessPwd(connfd))
-                    done = 1;
-                break;
-            }
-            case CMD_CWD:{
-                if(ftpProcessCwd(connfd, arg))
-                    done = 1;
-                break;
-            }
-            case CMD_MKD:{
-                if(ftpProcessMkd(connfd, datafd, arg))
-                    done = 1;
-                break;
-            }
-            case CMD_RMD:{
-                if(ftpProcessRmd(connfd, datafd, arg))
-                    done = 1;
-                break;
-            }
-            /* common */
-            case CMD_TYPE:{
-                if(ftpProcessType(connfd, arg, typeCode))
-                    done = 1;
-                break;
-            }
-            case CMD_SYST:{
-                if(ftpProcessSyst(connfd))
-                    done = 1;
-                break;
-            }
-#if defined(SUPPORT_ACTIVE_CONN)
-            case CMD_PORT:{
-                if(ftpProcessPort(connfd, &cltIp, &cltPort)){
-                    done = 1;
-                }
-                else{
-                    if(ftpSetupDataConnActive(&datafd, cltIp, cltPort, portScan))
+                    else{
+                        printf("Conn not open\n\r");
+                        if((retVal = send(connfd, RESP_503_BAD_SEQ, strlen(RESP_503_BAD_SEQ), 0)) < 0){
+                        printf("Send 503 Error %d\n\r", retVal);
                         done = 1;
-                    else
+                        }
+                    }
+                    break;
+                }
+                case CMD_DELE:{
+                    if(ftpProcessDele(connfd, datafd, arg))
+                        done = 1;
+                    break;
+                }
+                case CMD_RNFR:{
+                    if(ftpProcessRnfr(connfd, datafd, arg, rn))
+                        done = 1;
+                    break;
+                }
+                case CMD_RNTO:{
+                    if(ftpProcessRnto(connfd, datafd, arg, rn))
+                        done = 1;
+                    break;
+                }
+                /* direcotry */
+                case CMD_LIST:{
+                    if(isConnOpen){
+                        isConnOpen = 0;
+                        if(ftpProcessList(connfd, datafd, arg))
+                            done = 1;
+                    }
+                    else{
+                        printf("Conn not open\n\r");
+                        if((retVal = send(connfd, RESP_503_BAD_SEQ, strlen(RESP_503_BAD_SEQ), 0)) < 0){
+                        printf("Send 503 Error %d\n\r", retVal); 
+                        done = 1;
+                        }
+                    }
+                    break;
+                }
+                case CMD_PWD:{
+                    if(ftpProcessPwd(connfd))
+                        done = 1;
+                    break;
+                }
+                case CMD_CWD:{
+                    if(ftpProcessCwd(connfd, arg))
+                        done = 1;
+                    break;
+                }
+                case CMD_MKD:{
+                    if(ftpProcessMkd(connfd, datafd, arg))
+                        done = 1;
+                    break;
+                }
+                case CMD_RMD:{
+                    if(ftpProcessRmd(connfd, datafd, arg))
+                        done = 1;
+                    break;
+                }
+                /* common */
+                case CMD_TYPE:{
+                    if(ftpProcessType(connfd, arg, typeCode))
+                        done = 1;
+                    break;
+                }
+                case CMD_SYST:{
+                    if(ftpProcessSyst(connfd))
+                        done = 1;
+                    break;
+                }
+                #if defined(SUPPORT_ACTIVE_CONN)
+                    case CMD_PORT:{
+                        if(ftpProcessPort(connfd, &cltIp, &cltPort)){
+                            done = 1;
+                        }
+                        else{
+                            if(ftpSetupDataConnActive(&datafd, cltIp, cltPort, portScan))
+                                done = 1;
+                            else
+                                isConnOpen = 1;
+                        }
+                        break;
+                    }
+                #endif
+                case CMD_PASV:{
+                    if(ftpProcessPasv(connfd, portScan, g_ulDeviceIp, &datafd)){
+                        done = 1;
+                    }
+                    else{
                         isConnOpen = 1;
+                    }
+                    break;
                 }
-                break;
-           }
-#endif
-            case CMD_PASV:{
-                if(ftpProcessPasv(connfd, portScan, g_ulDeviceIp, &datafd)){
-                    done = 1;
+                case CMD_NOOP:{
+                    if(ftpProcessNoop(connfd))
+                        done = 1;
+                    break;
                 }
-                else{
-                    isConnOpen = 1;
+                case CMD_INVALID:{
+                    if(ftpProcessInvalid(connfd) < 0)
+                        done = 1;
+                    break;
                 }
-                break;
+                default:
+                    break;
             }
-            case CMD_NOOP:{
-                if(ftpProcessNoop(connfd))
-                    done = 1;
-                break;
-            }
-            case CMD_INVALID:{
-                if(ftpProcessInvalid(connfd) < 0)
-                    done = 1;
-                break;
-            }
-            default:
-                break;
-        }
 
-
-    }
-
-    close(connfd);
-    if(datafd >= 0) close(datafd);
-    xSemaphoreGive(semTaskRunning);
-    vTaskDelete(NULL);
+        } // end of !done loop
+        // tell parent that is task is done
+        socks[ind] = 0;
+        close(connfd);
+        if(datafd > 0) close(datafd);
+    } // end of main loop
 }
 int ftpGetCmd(char *str, Cmd_t *cmd)
 {
@@ -575,6 +579,7 @@ int ftpProcessPasv(int connfd, unsigned short portScan, unsigned long srvIp, int
     int retVal;
     struct sockaddr_in tempaddr;
     int transfd;
+    int nonblocking = 1, count = 0;
     struct timeval tv;
     char resp[MAXBUFF];
 
@@ -603,16 +608,17 @@ int ftpProcessPasv(int connfd, unsigned short portScan, unsigned long srvIp, int
     }
     if(portScan == 0){
         printf("Cannot found a server port to use\n\r");
+        close(*datafd);
         return -1;
     }
 
     printf("use port %d to accept connection\n\r", portScan);
     if((retVal = listen(*datafd, LISTENQ)) < 0){ // fail
         printf("listen data socket Error %d\n\r", retVal);
-        close(*datafd);
         if((retVal = send(connfd, RESP_421_SRV_NOT_AVAI, strlen(RESP_421_SRV_NOT_AVAI), 0)) < 0){
             printf("send 421 Error %d\n\r", retVal);
         }
+        close(*datafd);
         return -1;
     }
     else{ // success
@@ -623,24 +629,39 @@ int ftpProcessPasv(int connfd, unsigned short portScan, unsigned long srvIp, int
 
         if(retVal = send(connfd, resp, strlen(resp), 0) < 0){
             printf("send 227 Error %d\n\r", retVal);
+            close(*datafd);
             return -1;
         }
         else{ // accepting connection
-#if defined(VERBOSE)
-            printf("resp: %s\n\r", resp);
-            printf("accepting trasn conn...\n\r");
-#endif
-            if((transfd = accept(*datafd, (struct sockaddr*)NULL, NULL)) < 0){
-                printf("transfd Error %d\n\r", transfd);
+            #if defined(VERBOSE)
+                printf("resp: %s\n\r", resp);
+                printf("accepting trans conn...\n\r");
+            #endif
+            // set nonblocking
+            if((retVal = setsockopt(*datafd, SOL_SOCKET, SO_NONBLOCKING, (const char*)&nonblocking, sizeof(nonblocking))) < 0){
+                printf("listenfd set nonblocking Error %d\n\r", retVal);
                 close(*datafd);
                 return -1;
             }
-#if defined(VERBOSE)
-            printf("accepted\n\r");
-#endif
+            while((transfd = accept(*datafd, (struct sockaddr*)NULL, NULL)) < 0 && count < PASV_TRY_TIMES){
+                if(transfd != EAGAIN) printf("transfd Error %d\n\r", transfd);
+                count++;
+                vTaskDelay(pdMS_TO_TICKS(1000));
+            }
+            if(transfd > 0){
+                #if defined(VERBOSE)
+                    printf("accepted\n\r");
+                #endif
+            }
+            else{
+                printf("accept failed %d\n\r", transfd);
+                close(*datafd);
+                return -1;
+            }
         }
     }
 
+    // success
     close(*datafd);
     *datafd = transfd;
     return 0;

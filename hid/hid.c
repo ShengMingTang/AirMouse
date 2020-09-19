@@ -109,7 +109,7 @@ void hidInit()
 }
 void hidTask(void *pvParameters)
 {
-    int fd;
+    int fd, tempfd;
     struct sockaddr_in	servaddr;
     int retVal;
     struct timeval tv;
@@ -140,8 +140,7 @@ void hidTask(void *pvParameters)
     // aucRdDataBuf[1] = 0x00;
     // I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
 
-    vTaskDelay(pdMS_TO_TICKS(3000));
-
+    vTaskDelay(pdMS_TO_TICKS(500)); // little delay for hardware
 
     // while(1){
     //     ucRegOffset = 0x02;
@@ -165,34 +164,51 @@ void hidTask(void *pvParameters)
     //     vTaskDelay(pdMS_TO_TICKS(500));
     // }
 
+    // init server addr
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family      = AF_INET;
+    servaddr.sin_port        = htons((int)MOUSE_PORT);
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
     while(1){
         do{
-            // init server addr
-            memset(&servaddr, 0, sizeof(servaddr));
-            servaddr.sin_family      = AF_INET;
-            servaddr.sin_port        = htons((int)RECVR_PORT);
-            servaddr.sin_addr.s_addr = htonl(g_ulStaIp);
-            
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            // open socket      
             if((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
                 printf("open sender sock Error %d\n\r", fd);
                 vTaskDelay(pdMS_TO_TICKS(1000));
                 continue;
             }
-            if((retVal = connect(fd, (struct sockaddr*)&servaddr, sizeof(servaddr))) < 0){
-                printf("Hid connect Error %d retry every second\n\r", retVal);
+            // bind
+            if(retVal = bind(fd, (struct sockaddr*) &servaddr, sizeof(servaddr)) < 0){
+                printf("bind Socket Error %d\r\n", retVal);
                 close(fd);
-                vTaskDelay(pdMS_TO_TICKS(1000));
                 continue;
             }
+            // listen
+            if(retVal = listen(fd, LISTENQ) < 0){
+                printf("listen Socket Error %d\r\n", retVal);
+                close(fd);
+                continue;
+            }
+            // ready to accept connection and check
+            tempfd = accept(fd, (struct sockaddr*)NULL, NULL);
+            close(fd);
+            if(tempfd < 0){
+                printf("accept socket Error %d\n\r", tempfd);
+                continue;
+            }
+            fd = tempfd;
+            // set recv timeout
             if((retVal = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv))) < 0){
                 printf("Set socket rcvtimeo Error %d\n\r", retVal);
                 close(fd);
-                vTaskDelay(pdMS_TO_TICKS(1000));
                 continue;
             }
         }while(retVal < 0);
-        printf("Hid connected\n\r");
 
+        printf("Hid connected\n\r");
+        
         while(1){            
             ucRegOffset = 0x02;
             ucRdLen = 7;
