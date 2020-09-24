@@ -23,6 +23,7 @@ while True:
                 data = s.recv(10)
                 if data:
                     data = array('b', data)
+                    print(data)
                     mouse.move(*(data[1:3]))
                     if data[0] & 0x04:
                         mouse.click(Button.left, 1)
