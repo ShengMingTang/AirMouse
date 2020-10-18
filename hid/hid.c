@@ -105,9 +105,6 @@ void hidInit()
     Timer_IF_Start(g_ulImuTimer, TIMER_A, SAMPLE_PERIOD_IN_MS);
 
     sensorInit();
-    while(1){
-        sensorRead();
-    }
 }
 void hidTask(void *pvParameters)
 {

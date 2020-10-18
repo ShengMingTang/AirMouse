@@ -244,7 +244,7 @@ void sensorRead()
     ucRegOffset = 0x02;
     ucRdLen = 7;
     I2C_IF_Write(BMA222_TWI_ADDR,&ucRegOffset,1,0);
-    I2C_IF_Read(BMA222_TWI_ADDR, &aucRdDataBuf[0], ucRdLen);
+    I2C_IF_Read(BMA222_TWI_ADDR, (unsigned char*)&aucRdDataBuf[0], ucRdLen);
     // only aucRdDataBuf[1], [3], [5] have data
     sensorData[0] = aucRdDataBuf[1];
     sensorData[1] = aucRdDataBuf[3];
@@ -301,5 +301,7 @@ void sensorHid(char *buff)
     /* not using kalman for mpu6050 */
 #else
     /* using bma222 */
+    buff[0] = -sensorData[0];
+    buff[1] = -sensorData[1];
 #endif
 }
