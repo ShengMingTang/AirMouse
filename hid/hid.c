@@ -38,7 +38,7 @@ extern "C"{
 #include <event_groups.h>
 // custom includes
 #include "hid.h"
-#include "sensor/sensor.h"
+#include "sensor.h"
 
 static void ImuTimerIntHandler(void);
 
@@ -105,9 +105,6 @@ void hidInit()
     Timer_IF_Start(g_ulImuTimer, TIMER_A, SAMPLE_PERIOD_IN_MS);
 
     sensorInit();
-    while(1){
-        sensorRead();
-    }
 }
 void hidTask(void *pvParameters)
 {

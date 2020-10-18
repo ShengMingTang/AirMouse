@@ -64,24 +64,6 @@ static signed short sensorData[SENSOR_AXIS];
 #ifdef USE_MPU6050
     /* copied from https://github.com/n1rml/esp32_airmouse main*/
     #include "MPU6050.h"
-    #include "MPU6050_6Axis_MotionApps20.h"
-
-    /** demo mouse speed */
-    #define MOUSE_SPEED 20
-    #define SCROLL_SENS 0.5
-
-    // MPU vars
-    static MPU6050 mpu = MPU6050();
-    Quaternion q;           // [w, x, y, z]         quaternion container
-    VectorFloat gravity;    // [x, y, z]            gravity vector
-    float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-    uint16_t packetSize = 42;    // expected DMP packet size (default is 42 bytes)
-    uint16_t fifoCount;     // count of all bytes currently in FIFO
-    uint8_t fifoBuffer[64]; // FIFO storage buffer
-    uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
-    float yaw = 0.0, pitch = 0.0, roll = 0.0;
-    float vertZero = 0, horzZero = 0, scrlZero = 0;
-    float vertValue, horzValue, scrlValue;
 #endif
 
 #ifdef USE_MPU6050
@@ -156,27 +138,16 @@ void sensorInit()
     
     /* hand-written code for initializing mpu6050 */
     // power up
-    // aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
-    // aucRdDataBuf[1] = 0x20; // cycle mode
-    // I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
-    // // power up check
-    // aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
-    // I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],1,0);
-    // aucRdDataBuf[0] = 0;
-    // I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0],1);
-    // printf("Power check: %x", aucRdDataBuf[0]);
+    aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
+    aucRdDataBuf[1] = 0x20; // cycle mode
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
+    // power up check
+    aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],1,0);
+    aucRdDataBuf[0] = 0;
+    I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0],1);
+    printf("Power check: %x", aucRdDataBuf[0]);
 
-    /* copied from https://github.com/n1rml/esp32_airmouse main->mpu_poll*/
-    mpu.initialize();
-	mpu.dmpInitialize();
-    // This need to be setup individually
-	mpu.setXGyroOffset(220);
-	mpu.setYGyroOffset(76);
-	mpu.setZGyroOffset(-85);
-	mpu.setZAccelOffset(1788);
-
-	mpu.setDMPEnabled(true);
-    printf("mpu initialized successfully\n\r");
 #else
     /* nothing to do for bma222*/
 #endif
@@ -187,59 +158,18 @@ void sensorRead()
     unsigned char ucRdLen;
     int i;
 #ifdef USE_MPU6050
-    // ucRegOffset = MPU6050_RA_ACCEL_XOUT_H;
-    // ucRdLen = 14;
-    // I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&ucRegOffset,1,0);
-    // I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, (unsigned char*)&(aucRdDataBuf[0]), ucRdLen);
-    // int a, b, c;
-    // sensorData[0] = ((int)aucRdDataBuf[ 0] << 8 | aucRdDataBuf[ 1]); // ax
-    // sensorData[1] = ((int)aucRdDataBuf[ 2] << 8 | aucRdDataBuf[ 3]); // ay
-    // sensorData[2] = ((int)aucRdDataBuf[ 4] << 8 | aucRdDataBuf[ 5]); // az
-    // // [6] [7] is not used (temp)
-    // sensorData[4] = ((int)aucRdDataBuf[ 8] << 8 | aucRdDataBuf[ 9]); // gy
-    // sensorData[5] = ((int)aucRdDataBuf[10] << 8 | aucRdDataBuf[11]); // gz
-    // sensorData[6] = ((int)aucRdDataBuf[12] << 8 | aucRdDataBuf[13]); // gx
-
-    /* copied from https://github.com/n1rml/esp32_airmouse main->mpu_poll*/
-    mpuIntStatus = mpu.getIntStatus();
-    // get current FIFO count
-    fifoCount = mpu.getFIFOCount();
-
-    if ((mpuIntStatus & 0x10) || fifoCount == 1024)
-    {
-        // reset so we can continue cleanly
-        mpu.resetFIFO();
-
-        // otherwise, check for DMP data ready interrupt frequently)
-    }
-    else if (mpuIntStatus & 0x02)
-    {
-        // wait for correct available data length, should be a VERY short wait
-        while (fifoCount < packetSize)
-            fifoCount = mpu.getFIFOCount();
-
-        // read a packet from FIFO
-
-        mpu.getFIFOBytes(fifoBuffer, packetSize);
-        mpu.dmpGetQuaternion(&q, fifoBuffer);
-        mpu.dmpGetGravity(&gravity, &q);
-        mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-        yaw = ypr[2] /M_PI * 180;
-        pitch = ypr[1] /M_PI * 180;
-        roll = ypr[0] /M_PI * 180;
-        vertValue = yaw - vertZero;
-        horzValue = roll - horzZero;
-        scrlValue = pitch - scrlZero;
-        vertZero = yaw;
-        horzZero = roll;
-        scrlValue = pitch;
-        printf("rpy = (%f, %f, %f)\n\r", roll, pitch, yaw);
-    }
-
-    //Best result is to match with DMP refresh rate
-    // Its last value in components/MPU6050/MPU6050_6Axis_MotionApps20.h file line 310
-    // Now its 0x13, which means DMP is refreshed with 10Hz rate
-    vTaskDelay(25 / portTICK_PERIOD_MS);
+    ucRegOffset = MPU6050_RA_ACCEL_XOUT_H;
+    ucRdLen = 14;
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&ucRegOffset,1,0);
+    I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, (unsigned char*)&(aucRdDataBuf[0]), ucRdLen);
+    int a, b, c;
+    sensorData[0] = ((int)aucRdDataBuf[ 0] << 8 | aucRdDataBuf[ 1]); // ax
+    sensorData[1] = ((int)aucRdDataBuf[ 2] << 8 | aucRdDataBuf[ 3]); // ay
+    sensorData[2] = ((int)aucRdDataBuf[ 4] << 8 | aucRdDataBuf[ 5]); // az
+    // [6] [7] is not used (temp)
+    sensorData[4] = ((int)aucRdDataBuf[ 8] << 8 | aucRdDataBuf[ 9]); // gy
+    sensorData[5] = ((int)aucRdDataBuf[10] << 8 | aucRdDataBuf[11]); // gz
+    sensorData[6] = ((int)aucRdDataBuf[12] << 8 | aucRdDataBuf[13]); // gx
 #else
     ucRegOffset = 0x02;
     ucRdLen = 7;
@@ -252,8 +182,8 @@ void sensorRead()
     for(i = 0; i < SENSOR_AXIS; i++){
         if(abs(sensorData[i] - sensorOffset[i]) <= sensorThres[i])
             sensorData[i] = 0;
-        // else
-        //     sensorData[i] *= 1.5;
+        else
+            sensorData[i] *= 1.5;
     }
 #endif
 }
@@ -301,5 +231,7 @@ void sensorHid(char *buff)
     /* not using kalman for mpu6050 */
 #else
     /* using bma222 */
+    buff[0] = -sensorData[0];
+    buff[1] = -sensorData[1];
 #endif
 }
