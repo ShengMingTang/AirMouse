@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C"{
+#endif
 // Standard includes
 #include <string.h>
 #include <stdio.h>
@@ -40,7 +43,7 @@ unsigned long  g_ulDeviceIp = 0;
 volatile unsigned long  g_ulStaIp = 0;
 unsigned char g_ucSSID[AP_SSID_LEN_MAX];
 
-#if defined(ccs)
+#if defined(ccs) || defined(gcc)
 extern void (* const g_pfnVectors[])(void);
 #endif
 #if defined(ewarm)
@@ -349,3 +352,7 @@ signed long DisplayIP()
                 SL_IPV4_BYTE(g_ulDeviceIp,1), SL_IPV4_BYTE(g_ulDeviceIp,0));
     return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

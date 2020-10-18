@@ -36,7 +36,9 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 // Standard includes
 #include <stdio.h>
 
@@ -60,6 +62,10 @@
 
 // Common interface include
 #include "gpio_if.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 //****************************************************************************
 //                      GLOBAL VARIABLES

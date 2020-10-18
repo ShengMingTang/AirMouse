@@ -1,6 +1,10 @@
 #ifndef FTP_SERVER_H
 #define FTP_SERVER_H
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // Standard includes
 #include <stdio.h>
 #include <stdlib.h>
@@ -201,6 +205,10 @@ int ftpStorageRmd(int connfd, int datafd, char *path);
 #if defined(SUPPORT_ACTIVE_CONN)
 int ftpProcessPort(int connfd, OUTPUT unsigned long *cltIp, OUTPUT unsigned long *cltPort);
 int  ftpSetupDataConnActive(int *datafd, unsigned long cltIp, unsigned short cltPort, unsigned short portScan);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

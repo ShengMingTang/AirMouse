@@ -39,6 +39,9 @@
 #ifndef __STDCMD_H__
 #define __STDCMD_H__
 
+#ifdef __cplusplus
+extern "C"{
+#endif
 //*****************************************************************************
 // Standard MMC/SD Card Commands                           
 //*****************************************************************************
@@ -58,5 +61,9 @@
 #define CMD_SET_BLK_CNT      SDHOST_CMD_23|SDHOST_RESP_LEN_48
 #define CMD_ALL_SEND_CID     SDHOST_CMD_2|SDHOST_RESP_LEN_136
 #define CMD_SEND_REL_ADDR    SDHOST_CMD_3|SDHOST_RESP_LEN_48
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //__STDCMD_H__

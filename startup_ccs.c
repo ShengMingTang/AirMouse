@@ -35,6 +35,9 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 #ifndef USE_TIRTOS  /* if project uses TI-RTOS then no need to include startup file */
 //*****************************************************************************
@@ -73,7 +76,13 @@ extern unsigned long __STACK_END;
 // the program if located at a start address other than 0.
 //
 //*****************************************************************************
+// @@ c++
+#ifdef __cplusplus
+#pragma DATA_SECTION(".intvecs")
+extern "C"
+#else
 #pragma DATA_SECTION(g_pfnVectors, ".intvecs")
+#endif
 void (* const g_pfnVectors[256])(void) =
 {
     (void (*)(void))((unsigned long)&__STACK_END),
@@ -260,5 +269,9 @@ IntDefaultHandler(void)
     while(1)
     {
     }
+}
+#endif
+
+#ifdef __cplusplus
 }
 #endif

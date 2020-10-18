@@ -35,7 +35,9 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 #include <stdio.h>
 #include <string.h>
 
@@ -66,6 +68,9 @@
 #define CTL_TBL_SIZE            64  //32*2 entries
 #define UDMA_CH5_BITID          (1<<5)
 
+#ifdef __cplusplus
+}
+#endif
 //*****************************************************************************
 //                 GLOBAL VARIABLES -- Start
 //*****************************************************************************
@@ -76,7 +81,12 @@ tAppCallbackHndl gfpAppCallbackHndl[MAX_NUM_CH];
 tDMAControlTable gpCtlTbl[CTL_TBL_SIZE] __attribute__(( aligned(1024)));
 #endif
 #if defined(ccs)
+// @@ c++
+#ifdef __cplusplus
+
+#else
 #pragma DATA_ALIGN(gpCtlTbl, 1024)
+#endif
 tDMAControlTable gpCtlTbl[CTL_TBL_SIZE];
 #endif
 #if defined(ewarm)

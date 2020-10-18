@@ -1,5 +1,12 @@
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 #include "ftp_server.h"
 
+#ifdef __cplusplus
+}
+#endif
 static int ind[MAX_NUM_TASKS]; // indicies 
 static volatile int socks[MAX_NUM_TASKS] = {0}; // the ith task accesses socks[i]
 void ftpServerInit()

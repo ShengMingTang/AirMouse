@@ -1,12 +1,14 @@
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // Standard includes
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 // Simplelink includes
 #include "simplelink.h"
 #include "netcfg.h"
-
 //driverlib includes
 #include "hw_ints.h"
 #include "hw_types.h"
@@ -18,23 +20,23 @@
 #include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
-
 //Free_rtos/ti-rtos includes
 #include "osi.h"
-
 // common interface includes
 #include "gpio_if.h"
 #include "uart_if.h"
 #include "common.h"
-
 #include "smartconfig.h"
 #include "pinmux.h"
-
 // app includes
 #include <FreeRTOS.h>
 #include <projdefs.h>
 #include <task.h>
 #include <semphr.h>
+
+#ifdef __cplusplus
+}
+#endif
 
 extern volatile unsigned long  g_ulStatus;//SimpleLink Status
 extern unsigned char  g_ucConnectionSSID[SSID_LEN_MAX+1]; //Connection SSID
@@ -43,10 +45,6 @@ extern char g_p2p_dev[MAXIMAL_SSID_LENGTH + 1];
 extern unsigned long  g_ulDeviceIp;
 extern unsigned long  g_ulStaIp;
 extern unsigned long  g_ulGatewayIP; //Network Gateway IP address
-
-// extern unsigned long  g_ulPingPacketsRecv; //Number of Ping Packets received
-// extern int g_iSimplelinkRole;
-// extern unsigned char g_ucSSID[AP_SSID_LEN_MAX];
 
 //*****************************************************************************
 // SimpleLink Asynchronous Event Handlers -- Start

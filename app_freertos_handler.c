@@ -1,9 +1,18 @@
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // Standard includes
 #include <stdlib.h>
 
 //Free_rtos/ti-rtos includes
 #include "osi.h"
 
+void vAssertCalled( const char *pcFile, unsigned long ulLine );
+void vApplicationIdleHook( void);
+void vApplicationStackOverflowHook( OsiTaskHandle *pxTask,
+                                   signed char *pcTaskName);
+                                   
 #ifdef USE_FREERTOS
 //*****************************************************************************
 // FreeRTOS User Hook Functions enabled in FreeRTOSConfig.h
@@ -78,3 +87,7 @@ void vApplicationStackOverflowHook( OsiTaskHandle *pxTask,
     }
 }
 #endif //USE_FREERTOS
+
+#ifdef __cplusplus
+}
+#endif

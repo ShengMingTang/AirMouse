@@ -34,7 +34,9 @@
 //
 //*****************************************************************************
 
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 //simplelink include
 #include "simplelink.h"
 
@@ -46,6 +48,9 @@
 
 #define WLAN_DEL_ALL_PROFILES        0xff
 
+#ifdef __cplusplus
+}
+#endif
 
 //*****************************************************************************
 //

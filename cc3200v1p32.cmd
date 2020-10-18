@@ -65,8 +65,8 @@ MEMORY
 
     /*without LFN*/
 
-    SRAM_CODE (RWX) : origin = 0x20004000, length = 0x17FFF
-    SRAM_DATA (RWX) : origin = 0x2001C000, length = 0x14000
+    SRAM_CODE (RWX) : origin = 0x20004000, length = 0x19FFF
+    SRAM_DATA (RWX) : origin = 0x2001E000, length = 0x12000
 
 
     /*without LFN*/

@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // Standard includes
 #include <string.h>
 #include <stdio.h>
@@ -24,7 +28,7 @@
 #include "ff.h"
 
 // Free_rtos/ti-rtos includes
-#include "osi.h"
+ #include "osi.h"
 
 // common interface includes
 #include "gpio_if.h"
@@ -45,6 +49,10 @@
 // hw settings
 #define SDHOST_CLK_SPEED 24000000
 extern void SDHostIntHandler();
+
+#ifdef __cplusplus
+}
+#endif
 
 void main(void)
 {
@@ -195,7 +203,6 @@ void main(void)
     /* hid */
 #if defined(USE_HID)
     #warning "HID is used"
-    hidInit();
     lRetVal = osi_TaskCreate(hidTask, (signed char*)"hidTask",
         OSI_STACK_SIZE, NULL, 8, NULL
     );

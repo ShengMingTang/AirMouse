@@ -35,7 +35,9 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 // Standard includes
 #include <stdarg.h>
 #include <stdlib.h>
@@ -58,6 +60,10 @@
 #include "uart_if.h"
 
 #define IS_SPACE(x)       (x == 32 ? 1 : 0)
+
+#ifdef __cplusplus
+}
+#endif
 
 //*****************************************************************************
 // Global variable indicating command is present
@@ -316,7 +322,12 @@ int Report(const char *pcFormat, ...)
       else
       {
           iSize*=2;
+          // @@c++
+#ifdef __cplusplus
+          if((pcTemp=(char*)realloc(pcBuff,iSize))==NULL)
+#else
           if((pcTemp=realloc(pcBuff,iSize))==NULL)
+#endif
           {
               Message("Could not reallocate memory\n\r");
               iRet = -1;

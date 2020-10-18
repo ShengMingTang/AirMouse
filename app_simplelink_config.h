@@ -1,6 +1,10 @@
 #ifndef APP_SIMPLELINK_CONFIG_H_
 #define APP_SIMPLELINK_CONFIG_H_
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 #define APPLICATION_NAME        "Air Mouse"
 #define APPLICATION_VERSION     "1.4.0"
 
@@ -35,5 +39,9 @@ long ConfigureSimpleLinkToDefaultState();
 void ReadDeviceConfiguration();
 
 signed long DisplayIP();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* APP_SIMPLELINK_CONFIG_H_ */

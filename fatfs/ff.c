@@ -118,10 +118,16 @@
 /                   Fixed a potential problem of FAT access that can appear on disk error.
 /                   Fixed null pointer dereference on attempting to delete the root direcotry.
 /---------------------------------------------------------------------------*/
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of disk I/O functions */
 
+#ifdef __cplusplus
+}
+#endif
 
 
 

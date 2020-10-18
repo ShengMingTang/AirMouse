@@ -35,6 +35,9 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 #include "hw_types.h"
 #include "hw_memmap.h"
@@ -53,6 +56,7 @@
 #include "udma_if.h"
 #include "stdcmd.h"
 
+
 //*****************************************************************************
 //                 GLOBAL VARIABLES -- Start
 //*****************************************************************************
@@ -63,6 +67,8 @@ static tBoolean bIsRead;
 static unsigned long ulNofBlocks;
 static unsigned long *pulNxtBuff;
 #define CARD_BLK_SIZE_IN_BYTES 512
+
+void SDHostIntHandler();
 
 //!
 void SDHostIntHandler()
@@ -958,3 +964,7 @@ DWORD get_fattime()
 {
   return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif

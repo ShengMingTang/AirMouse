@@ -35,12 +35,17 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 #include <stdlib.h>
 
 // Simplelink includes
 #include "simplelink.h"
 
+#ifdef __cplusplus
+}
+#endif
 
 //*****************************************************************************
 // SimpleLink Asynchronous Event Handlers -- Start

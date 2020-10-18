@@ -35,7 +35,9 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 // Standard includes
 #include <stdbool.h>
 #include <stdint.h>
@@ -72,6 +74,9 @@
 //****************************************************************************
 static int I2CTransact(unsigned long ulCmd);
 
+#ifdef __cplusplus
+}
+#endif
 
 //****************************************************************************
 //

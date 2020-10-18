@@ -35,7 +35,9 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 // Driverlib includes
 #include "hw_types.h"
 #include "hw_memmap.h"
@@ -55,6 +57,7 @@
 
 #include "timer_if.h"
 
+static unsigned char GetPeripheralIntNum(unsigned long ulBase, unsigned long ulTimer);
 
 static unsigned char
 GetPeripheralIntNum(unsigned long ulBase, unsigned long ulTimer)
@@ -97,6 +100,7 @@ GetPeripheralIntNum(unsigned long ulBase, unsigned long ulTimer)
     }
 
 }
+
 
 //*****************************************************************************
 //
@@ -328,3 +332,6 @@ unsigned int Timer_IF_GetCount(unsigned long ulBase, unsigned long ulTimer)
 //
 //*****************************************************************************
 
+#ifdef __cplusplus
+}
+#endif

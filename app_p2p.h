@@ -1,6 +1,10 @@
 #ifndef APP_P2P_H_
 #define APP_P2P_H_
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // P2P defines
 #define P2P_REMOTE_DEVICE   "remote-p2p-device"
 #define P2P_DEVICE_NAME     "Air-Mouse"
@@ -18,5 +22,9 @@ void P2PManagerTask(void * pvParameters);
 long WlanConnect();
 long StartDeviceInP2P();
 long P2PConfiguration();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* APP_P2P_H_ */

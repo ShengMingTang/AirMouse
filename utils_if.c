@@ -36,6 +36,9 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
+#ifdef __cplusplus
+extern "C"{
+#endif
 #include <stdint.h>
 #include <stdbool.h>
 #include "hw_types.h"
@@ -46,6 +49,9 @@
 #include "prcm.h"
 #include "spi.h"
 
+#ifdef __cplusplus
+}
+#endif
 //*****************************************************************************
 //
 //! \addtogroup utils_if_api

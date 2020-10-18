@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C"{
+#endif
 // Standard includes
 #include <stdio.h>
 #include <string.h>
@@ -35,7 +38,13 @@
 #include <event_groups.h>
 // custom includes
 #include "hid.h"
-#include "sensor.h"
+#include "sensor/sensor.h"
+
+static void ImuTimerIntHandler(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 // extern
 extern volatile unsigned long  g_ulStaIp;
@@ -96,6 +105,9 @@ void hidInit()
     Timer_IF_Start(g_ulImuTimer, TIMER_A, SAMPLE_PERIOD_IN_MS);
 
     sensorInit();
+    while(1){
+        sensorRead();
+    }
 }
 void hidTask(void *pvParameters)
 {
@@ -107,6 +119,8 @@ void hidTask(void *pvParameters)
     unsigned char ucRegOffset;
     unsigned char ucRdLen;
 
+    hidInit();
+    
     tv.tv_sec = HID_REPLY_TIMEOUT; // End device must reply within this more second
     tv.tv_usec = 0;
 

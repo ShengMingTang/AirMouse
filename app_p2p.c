@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C"{
+#endif
 // Standard includes
 #include <string.h>
 #include <stdio.h>
@@ -29,6 +32,10 @@
 // custom includes
 #include "app_simplelink_config.h"
 #include "app_p2p.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 extern volatile unsigned long  g_ulStatus; //SimpleLink Status
 char g_p2p_dev[MAXIMAL_SSID_LENGTH + 1];

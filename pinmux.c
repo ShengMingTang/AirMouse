@@ -40,7 +40,9 @@
 // by TI PinMux version 3.0.334
 //
 //*****************************************************************************
-
+#ifdef __cplusplus
+extern "C"{
+#endif
 #include "pinmux.h"
 #include "hw_types.h"
 #include "hw_memmap.h"
@@ -50,6 +52,10 @@
 #include "rom_map.h"
 #include "gpio.h"
 #include "prcm.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 //*****************************************************************************
 void

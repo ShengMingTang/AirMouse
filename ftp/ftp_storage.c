@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C"{
+#endif
 #include "ftp_server.h"
 #include <ff.h>
 static FATFS fs;
@@ -6,6 +9,10 @@ static const char month[][4] = {
     "May", "Jun", "Jul", "Ago",
     "Sep", "Oct", "Nov", "Dec"
 };
+static void trimFilename(const char *p, char *trim);
+#ifdef __cplusplus
+}
+#endif
 
 static void trimFilename(const char *p, char *trim)
 {
