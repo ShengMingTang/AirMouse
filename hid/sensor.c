@@ -32,6 +32,11 @@ extern "C"{
 #include "timer_if.h"
 #include "i2c_if.h"
 
+
+// FreeRTOS includes
+#include <FreeRTOS.h>
+#include <projdefs.h>
+#include <task.h>
 // sensor includes
 #include "sensor.h"
 
@@ -135,19 +140,8 @@ void sensorInit()
     /* hardware init */
 #ifdef USE_MPU6050
     /* mpu6050 */
-    
-    /* hand-written code for initializing mpu6050 */
-    // power up
-    aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
-    aucRdDataBuf[1] = 0x20; // cycle mode
-    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
-    // power up check
-    aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
-    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],1,0);
-    aucRdDataBuf[0] = 0;
-    I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0],1);
-    printf("Power check: %x", aucRdDataBuf[0]);
-
+    if(mpuReset())
+        printf("Error Init mpu6050\n\r");
 #else
     /* nothing to do for bma222*/
 #endif
@@ -161,15 +155,14 @@ void sensorRead()
     ucRegOffset = MPU6050_RA_ACCEL_XOUT_H;
     ucRdLen = 14;
     I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&ucRegOffset,1,0);
-    I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, (unsigned char*)&(aucRdDataBuf[0]), ucRdLen);
-    int a, b, c;
-    sensorData[0] = ((int)aucRdDataBuf[ 0] << 8 | aucRdDataBuf[ 1]); // ax
-    sensorData[1] = ((int)aucRdDataBuf[ 2] << 8 | aucRdDataBuf[ 3]); // ay
-    sensorData[2] = ((int)aucRdDataBuf[ 4] << 8 | aucRdDataBuf[ 5]); // az
+    I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, &(aucRdDataBuf[0]), ucRdLen);
+    sensorData[0] = ((short)aucRdDataBuf[ 0] << 8 | aucRdDataBuf[ 1]); // ax
+    sensorData[1] = ((short)aucRdDataBuf[ 2] << 8 | aucRdDataBuf[ 3]); // ay
+    sensorData[2] = ((short)aucRdDataBuf[ 4] << 8 | aucRdDataBuf[ 5]); // az
     // [6] [7] is not used (temp)
-    sensorData[4] = ((int)aucRdDataBuf[ 8] << 8 | aucRdDataBuf[ 9]); // gy
-    sensorData[5] = ((int)aucRdDataBuf[10] << 8 | aucRdDataBuf[11]); // gz
-    sensorData[6] = ((int)aucRdDataBuf[12] << 8 | aucRdDataBuf[13]); // gx
+    sensorData[3] = ((short)aucRdDataBuf[ 8] << 8 | aucRdDataBuf[ 9]); // gy
+    sensorData[4] = ((short)aucRdDataBuf[10] << 8 | aucRdDataBuf[11]); // gz
+    sensorData[5] = ((short)aucRdDataBuf[12] << 8 | aucRdDataBuf[13]); // gx
 #else
     ucRegOffset = 0x02;
     ucRdLen = 7;
@@ -229,9 +222,57 @@ void sensorHid(char *buff)
         // keyboard will fill in later
     #endif
     /* not using kalman for mpu6050 */
+    buff[0] = (signed char)(sensorData[0] >> 10);
+    buff[1] = (signed char)(sensorData[1] >> 10);
 #else
     /* using bma222 */
     buff[0] = -sensorData[0];
     buff[1] = -sensorData[1];
 #endif
+}
+
+int mpuReset()
+{
+#ifdef USE_MPU6050
+    /* reset device */
+    // aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
+    // aucRdDataBuf[1] = 0x80;
+    // I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
+    // vTaskDelay(pdMS_TO_TICKS(200)); // wait some ms
+
+    /* set to correct mode */
+    // cycle = 1, sleep = 0, temp_dis = 1, clksel = x_gyro
+    aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
+    aucRdDataBuf[1] = 0x2B;
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&aucRdDataBuf[0],2,0);
+
+    // power up check
+    aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_1;
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW,&(aucRdDataBuf[0]), 1, 0);
+    aucRdDataBuf[0] = 0;
+    I2C_IF_Read(MPU6050_ADDRESS_AD0_LOW, &(aucRdDataBuf[0]), 1);
+    printf("MPU INIT TO 0x%x\n\r", aucRdDataBuf[0]);
+    // set full scale range
+    // gyro
+    aucRdDataBuf[0] = MPU6050_RA_GYRO_CONFIG;
+    aucRdDataBuf[1] = 0x10; // +-1000 deg
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0], 2, 0);
+    // // accel
+    aucRdDataBuf[0] = MPU6050_RA_ACCEL_CONFIG;
+    aucRdDataBuf[1] = 0x00; // +-2g
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0], 2, 0);
+    // // set to 40Hz wake-up freq
+    // aucRdDataBuf[0] = MPU6050_RA_PWR_MGMT_2;
+    // aucRdDataBuf[1] = 0xC0;
+    // I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0], 2, 0);
+    // // set sample rate to 1kHz / (1 + 4)
+    aucRdDataBuf[0] = MPU6050_RA_SMPLRT_DIV;
+    aucRdDataBuf[1] = 0x04;
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0], 2, 0);
+    // // config
+    aucRdDataBuf[0] = MPU6050_RA_CONFIG;
+    aucRdDataBuf[1] = 0x03;
+    I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0], 2, 0);
+#endif
+    return 0;
 }

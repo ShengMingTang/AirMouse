@@ -34,6 +34,12 @@ void sensorRead();
 void sensorUpdate();
 void sensorHid(char *buff);
 
+/* MPU6050 */
+#ifdef USE_MPU6050
+// return non-zero if error occurs for all fns below
+int mpuReset();
+#endif
+
 #define printf UART_PRINT
 
 #ifdef __cplusplus
