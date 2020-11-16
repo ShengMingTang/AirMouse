@@ -41,8 +41,9 @@ extern "C"{
 
 //custom includes
 #include "app_simplelink_config.h"
-#include "app_p2p.h"
-#include "app_ap.h"
+// #include "app_p2p.h"
+// #include "app_ap.h"
+#include "app_link.h"
 #include "ftp/ftp_server.h"
 #include "hid/hid.h"
 
@@ -165,7 +166,7 @@ void main(void)
         ERR_PRINT(lRetVal);
         LOOP_FOREVER();
     }
-    
+/*
 #ifndef USE_AP
     // //
     // // Create p2p(connection) management Task
@@ -187,6 +188,14 @@ void main(void)
         LOOP_FOREVER();
     }
 #endif
+*/
+    lRetVal = osi_TaskCreate(linkLayerControlTask, (signed char*)"linkLayerControlTask",
+        OSI_STACK_SIZE, NULL, 8, NULL
+    );
+    if(lRetVal != OSI_OK){
+        ERR_PRINT(lRetVal);
+        LOOP_FOREVER();
+    }
 
 #if defined(USE_FTP)
     #warning "FTP is used"
