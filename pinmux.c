@@ -64,18 +64,18 @@ PinMuxConfig(void)
     //
     // Set unused pins to PIN_MODE_0 with the exception of JTAG pins 16,17,19,20
     //
-    MAP_PinModeSet(PIN_03, PIN_MODE_0);
-    MAP_PinModeSet(PIN_05, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_03, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_05, PIN_MODE_0);
     // MAP_PinModeSet(PIN_06, PIN_MODE_0);
-    MAP_PinModeSet(PIN_18, PIN_MODE_0);
-    MAP_PinModeSet(PIN_21, PIN_MODE_0);
-    MAP_PinModeSet(PIN_45, PIN_MODE_0);
-    MAP_PinModeSet(PIN_52, PIN_MODE_0);
-    MAP_PinModeSet(PIN_53, PIN_MODE_0);
-    MAP_PinModeSet(PIN_58, PIN_MODE_0);
-    MAP_PinModeSet(PIN_59, PIN_MODE_0);
-    MAP_PinModeSet(PIN_60, PIN_MODE_0);
-    MAP_PinModeSet(PIN_62, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_18, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_21, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_45, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_52, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_53, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_58, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_59, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_60, PIN_MODE_0);
+    // MAP_PinModeSet(PIN_62, PIN_MODE_0);
     
     //
     // Enable Peripheral Clocks 
@@ -100,17 +100,16 @@ PinMuxConfig(void)
 
     // @@ As Network Switch
     //
-    // Configure PIN_61 for GPIO Input
+    // Configure PIN_05 for GPIO Input
     //
-    PinTypeGPIO(PIN_61, PIN_MODE_0, false);
-    GPIODirModeSet(GPIOA0_BASE, 0x40, GPIO_DIR_MODE_IN);
-
+    PinTypeGPIO(PIN_05, PIN_MODE_0, false);
+    GPIODirModeSet(GPIOA1_BASE, 0x40, GPIO_DIR_MODE_IN);
     // @@ As Mouse Input Switch
     //
-    // Configure PIN_62 for GPIO Input
+    // Configure PIN_06 for GPIO Input
     //
-    PinTypeGPIO(PIN_62, PIN_MODE_0, false);
-    GPIODirModeSet(GPIOA0_BASE, 0x80, GPIO_DIR_MODE_IN);
+    PinTypeGPIO(PIN_06, PIN_MODE_0, false);
+    GPIODirModeSet(GPIOA1_BASE, 0x80, GPIO_DIR_MODE_IN);
 
     //
     // Configure PIN_01 for I2C0 I2C_SCL

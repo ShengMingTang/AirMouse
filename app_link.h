@@ -6,7 +6,7 @@ extern "C"{
 #endif
 
 // device specific
-#define NETWORK_PIN (PIN_61)
+#define NETWORK_PIN (14)
 #define NETWORK_AP_ON_VALUE (0)
 #define NETWORK_P2P_ON_VALUE (1)
 #define NETWORK_VALUE_NONE (2)

@@ -166,29 +166,6 @@ void main(void)
         ERR_PRINT(lRetVal);
         LOOP_FOREVER();
     }
-/*
-#ifndef USE_AP
-    // //
-    // // Create p2p(connection) management Task
-    #warning "P2P is used"
-    lRetVal = osi_TaskCreate(P2PManagerTask, (signed char*)"P2PManagerTask",
-        OSI_STACK_SIZE, NULL, 8, NULL
-    );
-    if(lRetVal != OSI_OK){
-        ERR_PRINT(lRetVal);
-        LOOP_FOREVER();
-    }
-#else
-    #warning "AP is used"
-    lRetVal = osi_TaskCreate(APTask, (signed char*)"APTask",
-        OSI_STACK_SIZE, NULL, OOB_TASK_PRIORITY, NULL
-    );
-    if(lRetVal != OSI_OK){
-        ERR_PRINT(lRetVal);
-        LOOP_FOREVER();
-    }
-#endif
-*/
     lRetVal = osi_TaskCreate(linkLayerControlTask, (signed char*)"linkLayerControlTask",
         OSI_STACK_SIZE, NULL, 8, NULL
     );

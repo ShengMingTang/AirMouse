@@ -191,6 +191,7 @@ void linkLayerControlTask(void * pvParameters)
             LOOP_FOREVER();
         }
         lRetVal = sl_Stop(SL_STOP_TIMEOUT);
+        UART_PRINT("Restart Network processor to switch state\n\r");
     }
 }
 void P2PManagerTask(void *pvParameters)
@@ -415,6 +416,7 @@ long WlanConnect()
             // Error, connection is failed
             // ASSERT_ON_ERROR(NETWORK_CONNECTION_FAILED);
             ERR_PRINT(NETWORK_CONNECTION_FAILED); // @@ added
+            return -1;
         }
     }
 

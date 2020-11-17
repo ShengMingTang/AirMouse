@@ -31,8 +31,6 @@
 							<tool id="com.ti.ccstudio.buildDefinitions.TMS470_20.2.exe.compilerDebug.244595555" name="ARM Compiler" superClass="com.ti.ccstudio.buildDefinitions.TMS470_20.2.exe.compilerDebug">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_20.2.compilerID.DEFINE.535872713" name="Pre-define NAME (--define, -D)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_20.2.compilerID.DEFINE" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="ccs"/>
-									<listOptionValue builtIn="false" value="USE_MPU6050"/>
-									<listOptionValue builtIn="false" value="USE_AP"/>
 									<listOptionValue builtIn="false" value="USE_FTP"/>
 									<listOptionValue builtIn="false" value="USE_HID"/>
 									<listOptionValue builtIn="false" value="__SL__"/>
