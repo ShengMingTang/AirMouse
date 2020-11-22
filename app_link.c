@@ -31,6 +31,9 @@
 #include "app_link.h"
 extern volatile unsigned long  g_ulStatus;//SimpleLink Status
 char g_p2p_dev[MAXIMAL_SSID_LENGTH + 1];
+static unsigned int uiGPIOPort;
+static unsigned char pucGPIOPin;
+static unsigned char ucPinValue;
 void linkLayerControlTask(void * pvParameters)
 {
     // AP and P2P
@@ -38,9 +41,6 @@ void linkLayerControlTask(void * pvParameters)
     unsigned char len = sizeof(SlNetCfgIpV4Args_t);
     SlNetCfgIpV4Args_t ipV4 = {0};
     long lRetVal = -1;
-    unsigned int uiGPIOPort;
-    unsigned char pucGPIOPin;
-    unsigned char ucPinValue;
 
     GPIO_IF_GetPortNPin(NETWORK_PIN,&uiGPIOPort,&pucGPIOPin);
     while(1){
@@ -388,12 +388,13 @@ long WlanConnect()
     ASSERT_ON_ERROR(lRetVal);
 
     // Wait till Device acquired an IP in P2P mode
-    while(! IS_P2P_REQ_RCVD(g_ulStatus))
+    while(! IS_P2P_REQ_RCVD(g_ulStatus) && ucPinValue == NETWORK_P2P_ON_VALUE)
 
     {
 #ifndef SL_PLATFORM_MULTI_THREADED
         _SlNonOsMainLoopTask();
 #endif
+        ucPinValue = GPIO_IF_Get(NETWORK_PIN,uiGPIOPort,pucGPIOPin);
     }
 
     // Connect with the device requesting the connection

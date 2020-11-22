@@ -1,1 +1,0 @@
-g++ main.c kalman_example.c kalman.c matrix.c matrix_unittests.c kalman_example_gravity.c cholesky.c

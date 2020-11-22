@@ -11,8 +11,9 @@ static int ind[MAX_NUM_TASKS]; // indicies
 static volatile int socks[MAX_NUM_TASKS] = {0}; // the ith task accesses socks[i]
 void ftpServerInit()
 {
-    if(ftpStorageInit() < 0){
+    while(ftpStorageInit() < 0){
         printf("Storage Init Error\n\r");
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
 void ftpServerTask(void *pvParameters)
@@ -24,6 +25,7 @@ void ftpServerTask(void *pvParameters)
     int retVal;
     int i;
 
+    ftpServerInit();
     // create all tasks
     for(i = 0; i < MAX_NUM_TASKS; i++){
         ind[i] = i;

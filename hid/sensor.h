@@ -5,6 +5,14 @@
 extern "C"{
 #endif
 
+// device specific
+// mouse input source select
+#include "adc.h"
+#define MOUSE_INPUT_SEL_PIN (24)
+#define MOUSE_INPUT_SELF_ON_VALUE (0)
+#define MOUSE_INPUT_OTHER_ON_VALUE (1)
+#define MOUSE_INPUT_PIN (ADC_CH_1)
+
 // this module provide an interface
 // from reading sensor data, filter data
 // to   output hid report
@@ -32,7 +40,7 @@ extern "C"{
 void sensorInit();
 void sensorRead();
 void sensorUpdate();
-void sensorHid(char *buff);
+void sensorToReport(char *buff);
 
 /* MPU6050 */
 #ifdef USE_MPU6050

@@ -60,31 +60,17 @@ extern "C"{
 //*****************************************************************************
 void
 PinMuxConfig(void)
-{
-    //
-    // Set unused pins to PIN_MODE_0 with the exception of JTAG pins 16,17,19,20
-    //
-    // MAP_PinModeSet(PIN_03, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_05, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_06, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_18, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_21, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_45, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_52, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_53, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_58, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_59, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_60, PIN_MODE_0);
-    // MAP_PinModeSet(PIN_62, PIN_MODE_0);
-    
+{   
     //
     // Enable Peripheral Clocks 
     //
     MAP_PRCMPeripheralClkEnable(PRCM_GPIOA1, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_GPIOA2, PRCM_RUN_MODE_CLK);
+    PRCMPeripheralClkEnable(PRCM_GPIOA3, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_SDHOST, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
+    PRCMPeripheralClkEnable(PRCM_ADC, PRCM_RUN_MODE_CLK);
 
     //
     // Configure PIN_04 for GPIO Input
@@ -106,11 +92,10 @@ PinMuxConfig(void)
     GPIODirModeSet(GPIOA1_BASE, 0x40, GPIO_DIR_MODE_IN);
     // @@ As Mouse Input Switch
     //
-    // Configure PIN_06 for GPIO Input
+    // Configure PIN_17 for GPIO Input
     //
-    PinTypeGPIO(PIN_06, PIN_MODE_0, false);
-    GPIODirModeSet(GPIOA1_BASE, 0x80, GPIO_DIR_MODE_IN);
-
+    PinTypeGPIO(PIN_17, PIN_MODE_0, false);
+    GPIODirModeSet(GPIOA3_BASE, 0x1, GPIO_DIR_MODE_IN);
     //
     // Configure PIN_01 for I2C0 I2C_SCL
     //
@@ -155,4 +140,9 @@ PinMuxConfig(void)
     // Configure PIN_57 for UART0 UART0_RX
     //
     MAP_PinTypeUART(PIN_57, PIN_MODE_3);
+
+    //
+    // Configure PIN_58 for ADC0 ADC_CH1
+    //
+    PinTypeADC(PIN_58, PIN_MODE_255);
 }

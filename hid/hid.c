@@ -117,6 +117,15 @@ void hidTask(void *pvParameters)
     unsigned char ucRdLen;
 
     hidInit();
+    /* for further testing ADC */
+    // while(1){
+    //     if(MAP_ADCFIFOLvlGet(ADC_BASE, MOUSE_INPUT_PIN)){
+    //         unsigned long sample;
+    //         sample = MAP_ADCFIFORead(ADC_BASE, MOUSE_INPUT_PIN);
+    //         // UART_PRINT("\n\rVoltage is %f, raw %ul\n\r",(((float)((sample >> 2 ) & 0x0FFF))*1.4)/4096, (sample >> 2 ) & 0x0FFF);
+    //     }
+    //     vTaskDelay(pdMS_TO_TICKS(1000));
+    // }
     
     tv.tv_sec = HID_REPLY_TIMEOUT; // End device must reply within this more second
     tv.tv_usec = 0;
@@ -177,7 +186,7 @@ void hidTask(void *pvParameters)
             sensorUpdate();
             // fill in report
             buff[0] = mouseClick;
-            sensorHid(&(buff[1]));
+            sensorToReport(&(buff[1]));
             mouseClick = 0;
 
             if((retVal = send(fd, buff, 4 + KB_MAXNUM_KEY_PRESS, 0)) < 0){

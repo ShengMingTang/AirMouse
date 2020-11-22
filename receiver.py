@@ -7,7 +7,7 @@ from array import array
 # HOST = '0.0.0.0' # any address
 HOST = '192.168.1.1' # any address
 PORT = 5002
-f = 1/125
+f = 1/60
 mouse = Controller()
 print(f"{HOST}, {PORT}")
 

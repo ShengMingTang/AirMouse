@@ -176,7 +176,6 @@ void main(void)
 
 #if defined(USE_FTP)
     #warning "FTP is used"
-    ftpServerInit();
     lRetVal = osi_TaskCreate(ftpServerTask, (signed char*)"FtpTask",
         OSI_STACK_SIZE, NULL, 8, NULL
     );
