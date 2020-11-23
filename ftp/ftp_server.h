@@ -18,6 +18,7 @@ extern "C"{
 // fatfs includes
 #include <ff.h>
 // board dependent includes
+#include "socket.h"
 #include "ftp_board.h" // provide interface between bsd APIs and simplink APIs
 
 /* source code build route */
@@ -66,11 +67,11 @@ extern unsigned long  g_ulDeviceIp;
 #define STR_TASK_PRIOR (8)
 // socket options
 #define FTP_PORT (21)
-#define CONN_SOCK_TIMEOUT (10)
+#define CONN_SOCK_TIMEOUT (60)
 #define DATA_SOCK_TIMEOUT (3)
 #define INV_CMD_TIMES (5) // max number of invalud command a client can send
 #define SOCK_BREAK_MS (50)
-#define PASV_TRY_TIMES (3)
+#define PASV_TRY_TIMES (60)
 // timeout for event wait
 #define FILSTR_EVENT_WAIT_MS (2000)
 
@@ -203,7 +204,7 @@ int ftpStorageRmd(int connfd, int datafd, char *path);
 
 
 #if defined(SUPPORT_ACTIVE_CONN)
-int ftpProcessPort(int connfd, OUTPUT unsigned long *cltIp, OUTPUT unsigned long *cltPort);
+int ftpProcessPort(int connfd, char *arg, OUTPUT unsigned long *cltIp, OUTPUT unsigned long *cltPort);
 int  ftpSetupDataConnActive(int *datafd, unsigned long cltIp, unsigned short cltPort, unsigned short portScan);
 #endif
 
