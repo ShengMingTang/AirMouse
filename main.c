@@ -69,9 +69,6 @@ void main(void)
     //Pin Configuration
     PinMuxConfig();
 
-    //Change Pin 58 Configuration from Default to Pull Down
-    MAP_PinConfigSet(PIN_58,PIN_STRENGTH_2MA|PIN_STRENGTH_4MA,PIN_TYPE_STD_PD);
-
     //
     // Initialize GREEN and ORANGE LED
     //
@@ -89,6 +86,13 @@ void main(void)
     //Display Application Banner on UART Terminal
     DisplayBanner(APPLICATION_NAME);
 
+    // #define UartPutChar(c)       MAP_UARTCharPut(CONSOLE,c)
+    // #define UartGetChar()        MAP_UARTCharGet(CONSOLE)
+    // char a = 0;
+    // while(1){
+    //     a = (signed char)UartGetChar();
+    //     UartPutChar(a);
+    // }
     //*****************************************************************************
     //              Board Routines -- End
     //*****************************************************************************

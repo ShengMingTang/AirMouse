@@ -70,7 +70,6 @@ PinMuxConfig(void)
     MAP_PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_SDHOST, PRCM_RUN_MODE_CLK);
     MAP_PRCMPeripheralClkEnable(PRCM_UARTA0, PRCM_RUN_MODE_CLK);
-    PRCMPeripheralClkEnable(PRCM_ADC, PRCM_RUN_MODE_CLK);
 
     //
     // Configure PIN_04 for GPIO Input
@@ -90,12 +89,18 @@ PinMuxConfig(void)
     //
     PinTypeGPIO(PIN_05, PIN_MODE_0, false);
     GPIODirModeSet(GPIOA1_BASE, 0x40, GPIO_DIR_MODE_IN);
+    // Activate internal pull-down resistor on PIN_61
+    MAP_PinConfigSet(PIN_05, PIN_STRENGTH_2MA, PIN_TYPE_STD_PD);
+    
     // @@ As Mouse Input Switch
     //
-    // Configure PIN_17 for GPIO Input
+    // Configure PIN_03 for GPIO Input
     //
-    PinTypeGPIO(PIN_17, PIN_MODE_0, false);
-    GPIODirModeSet(GPIOA3_BASE, 0x1, GPIO_DIR_MODE_IN);
+    PinTypeGPIO(PIN_03, PIN_MODE_0, false);
+    GPIODirModeSet(GPIOA1_BASE, 0x10, GPIO_DIR_MODE_IN);
+    // Activate internal pull-down resistor on PIN_61
+    MAP_PinConfigSet(PIN_03, PIN_STRENGTH_2MA, PIN_TYPE_STD_PD);
+
     //
     // Configure PIN_01 for I2C0 I2C_SCL
     //
@@ -140,9 +145,4 @@ PinMuxConfig(void)
     // Configure PIN_57 for UART0 UART0_RX
     //
     MAP_PinTypeUART(PIN_57, PIN_MODE_3);
-
-    //
-    // Configure PIN_58 for ADC0 ADC_CH1
-    //
-    PinTypeADC(PIN_58, PIN_MODE_255);
 }

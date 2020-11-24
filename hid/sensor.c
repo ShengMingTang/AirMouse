@@ -40,12 +40,25 @@ extern "C"{
 // sensor includes
 #include "sensor.h"
 
+
+#define UartPutChar(c)       MAP_UARTCharPut(CONSOLE,c)
+#define UartGetChar()        MAP_UARTCharGet(CONSOLE)
+
+extern char mouseClick;
+
 static signed char  aucRdDataBuf[32];
 static signed short sensorData[SENSOR_AXIS]; // {x, y, roll}
 // for source select
 static unsigned int uiGPIOPort;
 static unsigned char pucGPIOPin;
 static unsigned char ucPinValue;
+
+// HID report
+extern volatile unsigned long g_ulImuTimer;
+// mouse
+static char mousePress, lastMousePress, mouseClick;
+// keyboard
+static char kb[3+KB_MAXNUM_KEY_PRESS]; // 1(modifier) + 1(OEM reserved) + 1(LED) + max num key pressed
 
 #ifdef USE_MPU6050
     /* copied from https://github.com/n1rml/esp32_airmouse main*/
@@ -68,29 +81,6 @@ void sensorInit()
 {
     GPIO_IF_GetPortNPin(MOUSE_INPUT_SEL_PIN,&uiGPIOPort,&pucGPIOPin);
 
-    // ADC Init
-
-    //
-    // Configure ADC timer which is used to timestamp the ADC data samples
-    //
-    MAP_ADCTimerConfig(ADC_BASE,2^17);
-
-    //
-    // Enable ADC timer which is used to timestamp the ADC data samples
-    //
-    MAP_ADCTimerEnable(ADC_BASE);
-
-    //
-    // Enable ADC module
-    //
-    MAP_ADCEnable(ADC_BASE);
-
-    //
-    // Enable ADC channel
-    //
-
-    MAP_ADCChannelEnable(ADC_BASE, MOUSE_INPUT_PIN);
-
     ucPinValue = GPIO_IF_Get(MOUSE_INPUT_SEL_PIN,uiGPIOPort,pucGPIOPin);
     /* sensor init */
 #ifdef USE_MPU6050
@@ -106,9 +96,10 @@ void sensorRead()
     int i;
     unsigned char ucRegOffset;
     unsigned char ucRdLen;
-    unsigned long sample;
+    char temp;
 
     // read mpu6050 or bma222 according to compilation time decision
+    ucPinValue = GPIO_IF_Get(MOUSE_INPUT_SEL_PIN,uiGPIOPort,pucGPIOPin);
     if(ucPinValue == MOUSE_INPUT_SELF_ON_VALUE){
         #ifdef USE_MPU6050
             ucRegOffset = MPU6050_RA_ACCEL_XOUT_H;
@@ -128,9 +119,9 @@ void sensorRead()
             I2C_IF_Write(BMA222_TWI_ADDR,&ucRegOffset,1,0);
             I2C_IF_Read(BMA222_TWI_ADDR, &aucRdDataBuf[0], ucRdLen);
             // only aucRdDataBuf[1], [3], [5] have data
-            sensorData[0] = aucRdDataBuf[1];
-            sensorData[1] = aucRdDataBuf[3];
-            sensorData[2] = aucRdDataBuf[5];
+            sensorData[0] = -aucRdDataBuf[1];
+            sensorData[1] = -aucRdDataBuf[3];
+            // @@ roll is not used
             for(i = 0; i < SENSOR_AXIS; i++){
                 if(abs(sensorData[i] - sensorOffset[i]) <= sensorThres[i])
                     sensorData[i] = 0;
@@ -140,13 +131,15 @@ void sensorRead()
         #endif
     }
     else{ // read from others
-        if(MAP_ADCFIFOLvlGet(ADC_BASE, MOUSE_INPUT_PIN)){
-            sample = MAP_ADCFIFORead(ADC_BASE, MOUSE_INPUT_PIN);
+        temp = 0;
+        // protocol using UART, read until 0xFF as sentinel
+        while(temp != 0xFF){
+            temp = (signed char)UartGetChar();
         }
-        // unpack sample = (4-bit x || 4-bit y || 2-biy roll || 2-bit noise)
-        sensorData[0] = (sample >> 8);
-        sensorData[1] = (sample >> 4);
-        sensorData[1] = (sample >> 2);
+        sensorData[0] = (signed char)UartGetChar();
+        sensorData[1] = (signed char)UartGetChar();
+        UartPutChar((signed char)sensorData[0]);
+        UartPutChar((signed char)sensorData[1]);
     }
 
 }
@@ -169,9 +162,18 @@ void sensorToReport(char *buff)
     buff[1] = (signed char)(sensorData[1] >> 10);
 #else
     /* using bma222 */
-    buff[0] = -sensorData[0];
-    buff[1] = -sensorData[1];
+    ucPinValue = GPIO_IF_Get(MOUSE_INPUT_SEL_PIN,uiGPIOPort,pucGPIOPin);
+    if(ucPinValue == MOUSE_INPUT_SELF_ON_VALUE){
+        buff[0] = mouseClick;
+    }
+    else{
+        buff[0] = (signed char)UartGetChar();
+        UartPutChar(buff[0]);
+    }
+    buff[1] = (signed char)sensorData[0];
+    buff[2] = (signed char)sensorData[1];
 #endif
+    mouseClick = 0;
 }
 
 int mpuReset()
@@ -218,4 +220,38 @@ int mpuReset()
     I2C_IF_Write(MPU6050_ADDRESS_AD0_LOW, &aucRdDataBuf[0], 2, 0);
 #endif
     return 0;
+}
+
+void ImuTimerIntHandler(void)
+{
+    // BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    static char debounceL, debounceR;
+    unsigned int uiGPIOPort;
+    unsigned char pucGPIOPin;
+    unsigned char ucPinValue;
+
+    lastMousePress = mousePress;
+    mousePress = 0;
+    // mouseClick = 0; // cleared by host
+
+    GPIO_IF_GetPortNPin(MOUSE_BTN_LEFT_PIN,&uiGPIOPort,&pucGPIOPin);
+    ucPinValue = GPIO_IF_Get(MOUSE_BTN_LEFT_PIN,uiGPIOPort,pucGPIOPin);
+    debounceL = (debounceL << 1) | ucPinValue;
+    if(debounceL == 0xff){
+        mousePress |= MOUSE_LEFT;
+        if((mousePress & MOUSE_LEFT) != (lastMousePress & MOUSE_LEFT)){
+            mouseClick |= MOUSE_LEFT;
+        }
+    }
+
+    GPIO_IF_GetPortNPin(MOUSE_BTN_RIGHT_PIN,&uiGPIOPort,&pucGPIOPin);
+    ucPinValue = GPIO_IF_Get(MOUSE_BTN_RIGHT_PIN, uiGPIOPort,pucGPIOPin);
+    debounceR = (debounceR << 1) | ucPinValue;
+    if(debounceR == 0xff){
+        mousePress |= MOUSE_RIGHT;
+        if((mousePress & MOUSE_RIGHT) != (lastMousePress & MOUSE_RIGHT)){
+            mouseClick |= MOUSE_RIGHT;
+        }
+    }
+    Timer_IF_InterruptClear(g_ulImuTimer);
 }

@@ -5,17 +5,22 @@
 extern "C"{
 #endif
 
-// device specific
-// mouse input source select
-#include "adc.h"
-#define MOUSE_INPUT_SEL_PIN (24)
-#define MOUSE_INPUT_SELF_ON_VALUE (0)
-#define MOUSE_INPUT_OTHER_ON_VALUE (1)
-#define MOUSE_INPUT_PIN (ADC_CH_1)
-
 // this module provide an interface
 // from reading sensor data, filter data
 // to   output hid report
+
+// device specific
+#define MOUSE_INPUT_SEL_PIN (12) // mouse input source select
+#define MOUSE_INPUT_SELF_ON_VALUE (0)
+#define MOUSE_INPUT_OTHER_ON_VALUE (1)
+#define MOUSE_BTN_LEFT_PIN (22)
+#define MOUSE_BTN_RIGHT_PIN (13)
+
+// symbolic bits
+#define MOUSE_LEFT (0x04)
+#define MOUSE_MID (0x02)
+#define MOUSE_RIGHT (0x01)
+#define KB_MAXNUM_KEY_PRESS 6 // that many key can be pressed at the same time
 
 #define AX (0)
 #define AY (1)

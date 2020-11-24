@@ -46,57 +46,12 @@ static void ImuTimerIntHandler(void);
 }
 #endif
 
+volatile unsigned long g_ulImuTimer = TIMERA0_BASE; // Base address for first timer
 // extern
 extern volatile unsigned long  g_ulStaIp;
 extern volatile unsigned long  g_ulStatus;
+extern void ImuTimerIntHandler(void);
 
-// Base address for first timer
-static volatile unsigned long g_ulImuTimer = TIMERA0_BASE;
-static SemaphoreHandle_t semImuReady;
-// mouse
-static char mousePress, lastMousePress, mouseClick;
-// keyboard
-static char kb[3+KB_MAXNUM_KEY_PRESS]; // 1(modifier) + 1(OEM reserved) + 1(LED) + max num key pressed
-
-static void ImuTimerIntHandler(void)
-{
-    // BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    static char debounceL, debounceR;
-    unsigned int uiGPIOPort;
-    unsigned char pucGPIOPin;
-    unsigned char ucPinValue;
-
-    lastMousePress = mousePress;
-    mousePress = 0;
-    // mouseClick = 0; // cleared by host
-
-    GPIO_IF_GetPortNPin(MOUSE_BTN_LEFT_PIN,&uiGPIOPort,&pucGPIOPin);
-    ucPinValue = GPIO_IF_Get(MOUSE_BTN_LEFT_PIN,uiGPIOPort,pucGPIOPin);
-    debounceL = (debounceL << 1) | ucPinValue;
-    if(debounceL == 0xff){
-        mousePress |= MOUSE_LEFT;
-        if((mousePress & MOUSE_LEFT) != (lastMousePress & MOUSE_LEFT)){
-            mouseClick |= MOUSE_LEFT;
-        }
-    }
-
-    GPIO_IF_GetPortNPin(MOUSE_BTN_RIGHT_PIN,&uiGPIOPort,&pucGPIOPin);
-    ucPinValue = GPIO_IF_Get(MOUSE_BTN_RIGHT_PIN, uiGPIOPort,pucGPIOPin);
-    debounceR = (debounceR << 1) | ucPinValue;
-    if(debounceR == 0xff){
-        mousePress |= MOUSE_RIGHT;
-        if((mousePress & MOUSE_RIGHT) != (lastMousePress & MOUSE_RIGHT)){
-            mouseClick |= MOUSE_RIGHT;
-        }
-    }
-    // if(mouseClick){
-    //     printf("%d\n\r", mouseClick);
-    // }
-    
-    // xSemaphoreGiveFromISR(semImuReady, &xHigherPriorityTaskWoken); // @@the NULL is okay after v.7.3.0
-    Timer_IF_InterruptClear(g_ulImuTimer);
-    // portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-}
 void hidInit()
 {
     I2C_IF_Open(I2C_MASTER_MODE_FST);
@@ -117,16 +72,7 @@ void hidTask(void *pvParameters)
     unsigned char ucRdLen;
 
     hidInit();
-    /* for further testing ADC */
-    // while(1){
-    //     if(MAP_ADCFIFOLvlGet(ADC_BASE, MOUSE_INPUT_PIN)){
-    //         unsigned long sample;
-    //         sample = MAP_ADCFIFORead(ADC_BASE, MOUSE_INPUT_PIN);
-    //         // UART_PRINT("\n\rVoltage is %f, raw %ul\n\r",(((float)((sample >> 2 ) & 0x0FFF))*1.4)/4096, (sample >> 2 ) & 0x0FFF);
-    //     }
-    //     vTaskDelay(pdMS_TO_TICKS(1000));
-    // }
-    
+
     tv.tv_sec = HID_REPLY_TIMEOUT; // End device must reply within this more second
     tv.tv_usec = 0;
 
@@ -185,9 +131,7 @@ void hidTask(void *pvParameters)
             sensorRead();
             sensorUpdate();
             // fill in report
-            buff[0] = mouseClick;
-            sensorToReport(&(buff[1]));
-            mouseClick = 0;
+            sensorToReport(buff);
 
             if((retVal = send(fd, buff, 4 + KB_MAXNUM_KEY_PRESS, 0)) < 0){
                 printf("%d Error on Send %d\n\r", fd, retVal);
