@@ -82,6 +82,14 @@ PinMuxConfig(void)
     //
     MAP_PinTypeGPIO(PIN_15, PIN_MODE_0, false);
     MAP_GPIODirModeSet(GPIOA2_BASE, 0x40, GPIO_DIR_MODE_IN);
+    
+    // @@ As soft reset button
+    //
+    // Configure PIN_16 for GPIO Input
+    //
+    PinTypeGPIO(PIN_16, PIN_MODE_0, false);
+    GPIODirModeSet(GPIOA2_BASE, 0x80, GPIO_DIR_MODE_IN);
+    MAP_PinConfigSet(PIN_16, PIN_STRENGTH_2MA, PIN_TYPE_STD_PD);
 
     // @@ As Network Switch
     //

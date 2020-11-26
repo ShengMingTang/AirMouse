@@ -57,7 +57,7 @@ extern unsigned long  g_ulDeviceIp;
 #define MAXPASS (32)
 #define MAXPATH (64)
 #define MAXBUFF (128)
-#define MAXTRANS (256)
+#define MAXTRANS (1024)
 #define	LISTENQ	(1024)
 // stack sizes, related to the above sizes
 #define SERVER_STACK_SIZE (2048)

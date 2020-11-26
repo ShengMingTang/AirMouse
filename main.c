@@ -48,7 +48,7 @@ extern "C"{
 #include "hid/hid.h"
 
 // hw settings
-#define SDHOST_CLK_SPEED 15000000
+#define SDHOST_CLK_SPEED 24000000
 extern void SDHostIntHandler();
 
 #ifdef __cplusplus
@@ -100,11 +100,14 @@ void main(void)
     //*****************************************************************************
     //              FatFs -- Start
     //*****************************************************************************
-
+#if defined(USE_UDMA)
     // @@udma
     // Initialize Udma
     //
     UDMAInit();
+#else
+    #warning "UDMA is not used"
+#endif
 
     //
     // Set the SD card clock as output pin
@@ -140,7 +143,7 @@ void main(void)
     //
     MAP_SDHostSetExpClk(SDHOST_BASE,
                             MAP_PRCMPeripheralClockGet(PRCM_SDHOST),SDHOST_CLK_SPEED);
-
+#if defined(USE_UDMA)
     // @@udma
     //
     // Register Interrupt
@@ -152,7 +155,8 @@ void main(void)
     // Interrupt Enable
     //
     MAP_SDHostIntEnable(SDHOST_BASE, SDHOST_INT_DMARD | SDHOST_INT_DMAWR);
-
+#else
+#endif
     //*****************************************************************************
     //              FatFs -- End
     //*****************************************************************************

@@ -225,7 +225,7 @@ int mpuReset()
 void ImuTimerIntHandler(void)
 {
     // BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    static char debounceL, debounceR;
+    static char debounceL, debounceR, debounceReset;
     unsigned int uiGPIOPort;
     unsigned char pucGPIOPin;
     unsigned char ucPinValue;
@@ -253,5 +253,18 @@ void ImuTimerIntHandler(void)
             mouseClick |= MOUSE_RIGHT;
         }
     }
+
+    GPIO_IF_GetPortNPin(RESET_BTN_PIN,&uiGPIOPort,&pucGPIOPin);
+    ucPinValue = GPIO_IF_Get(RESET_BTN_PIN,uiGPIOPort,pucGPIOPin);
+    debounceReset = (debounceReset << 1) | ucPinValue;
+
+    // @@ reset function is not completed
+    // if(debounceReset == 0xff){
+    //     sl_Stop(RESET_TIMEOUT);
+    //     UartPutChar('D');
+    //     Utils_TriggerHibCycle();
+    // }
+
     Timer_IF_InterruptClear(g_ulImuTimer);
+
 }

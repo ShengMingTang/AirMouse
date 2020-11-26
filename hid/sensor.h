@@ -15,6 +15,8 @@ extern "C"{
 #define MOUSE_INPUT_OTHER_ON_VALUE (1)
 #define MOUSE_BTN_LEFT_PIN (22)
 #define MOUSE_BTN_RIGHT_PIN (13)
+#define RESET_BTN_PIN (23)
+#define RESET_TIMEOUT (2000)
 
 // symbolic bits
 #define MOUSE_LEFT (0x04)

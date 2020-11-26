@@ -220,7 +220,7 @@ int ftpStorageStor(int connfd, int datafd, char *path)
     res = FR_OK;
 
     while(((retVal = recv(datafd, buff, sizeof(buff), 0)) > 0) && (res == FR_OK)){
-        if((res = f_write(&fp, "abc", sizeof("abc"), &btf)) != FR_OK){
+        if((res = f_write(&fp, buff, retVal, &btf)) != FR_OK){
             printf("f_write Error %d, tried to write %d bytes\n\r", res, retVal);
             break;
         }
