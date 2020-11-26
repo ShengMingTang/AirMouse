@@ -140,4 +140,6 @@ void hidTask(void *pvParameters)
         }
         close(fd);
     }
+
+    while(1) {}
 }

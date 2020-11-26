@@ -193,6 +193,8 @@ void linkLayerControlTask(void * pvParameters)
         lRetVal = sl_Stop(SL_STOP_TIMEOUT);
         UART_PRINT("Restart Network processor to switch state\n\r");
     }
+
+    while(1) {}
 }
 void P2PManagerTask(void *pvParameters)
 {

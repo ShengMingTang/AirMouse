@@ -62,7 +62,8 @@ extern "C"{
 //*****************************************************************************
 // @@udma
 // static unsigned char g_ucDataBuff[512]; // @@ used only in demo
-static tBoolean bTransferDone;
+static volatile tBoolean bTransferDone;
+// static tBoolean bTransferDone;
 static tBoolean bIsRead;
 static unsigned long ulNofBlocks;
 static unsigned long *pulNxtBuff;

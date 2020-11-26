@@ -83,6 +83,8 @@ void ftpServerTask(void *pvParameters)
         }
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+
+    while(1) {}
 }
 void ftpConnTask(void *pvParameters)
 {
@@ -324,6 +326,8 @@ void ftpConnTask(void *pvParameters)
         close(connfd);
         if(datafd > 0) close(datafd);
     } // end of main loop
+
+    while(1) {}
 }
 int ftpGetCmd(char *str, Cmd_t *cmd)
 {
@@ -453,7 +457,7 @@ int ftpProcessStor(int connfd, int datafd, char *path)
 {
     int retVal;
 #if defined(VERBOSE)
-    printf("Storing %s\n\r", path);
+    printf("Storing \"%s\"\n\r", path);
 #endif
 
 #if defined(TEST)

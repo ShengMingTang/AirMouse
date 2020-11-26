@@ -200,15 +200,18 @@ int ftpStorageStor(int connfd, int datafd, char *path)
 
     // sanity check
     trimFilename(path, fn);
+    printf("Filename %s trimmed to %s\n\r", path, fn);
     if(f_open(&fp, fn, FA_CREATE_ALWAYS | FA_WRITE) != FR_OK){
         printf("Open %s Error %d\n\r", fn);
         if((retVal = send(connfd, RESP_451_REQ_ABR, strlen(RESP_451_REQ_ABR), 0)) < 0){
             printf("Send 451 Error %d\n\r", retVal);
         }
+        fclose(&fp);
         return -1;
     }
     if((retVal = send(connfd, RESP_150_FILE_STAT_OK, strlen(RESP_150_FILE_STAT_OK), 0)) < 0){
         printf("send 150 Error %d\n\r", retVal);
+        fclose(&fp);
         return -1;
     }
 
@@ -217,8 +220,8 @@ int ftpStorageStor(int connfd, int datafd, char *path)
     res = FR_OK;
 
     while(((retVal = recv(datafd, buff, sizeof(buff), 0)) > 0) && (res == FR_OK)){
-        if((res = f_write(&fp, buff, retVal, &btf)) != FR_OK){
-            printf("f_wite Error %d\n\r", res);
+        if((res = f_write(&fp, "abc", sizeof("abc"), &btf)) != FR_OK){
+            printf("f_write Error %d, tried to write %d bytes\n\r", res, retVal);
             break;
         }
     }
@@ -267,12 +270,12 @@ int ftpStorageStor(int connfd, int datafd, char *path)
     vEventGroupDelete(param.event);
 #endif
 
-    f_close(&fp);
     if((retVal = send(connfd, RESP_226_TRANS_COMPLETE, strlen(RESP_226_TRANS_COMPLETE), 0)) < 0){
         printf("Send 226 Error %d\n\r", retVal);
     }
-    printf("Finishing storing %s\n\r", path);
+    f_close(&fp);
 
+    printf("Finishing storing %s\n\r", path);
     return 0;
 }
 int ftpStorageDele(int connfd, int datafd, char *path)

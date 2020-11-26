@@ -11,7 +11,7 @@ extern "C"{
 #define AP_SSID_LEN_MAX         (33)
 #define ROLE_INVALID            (-5)
 #define OOB_TASK_PRIORITY               (1)
-#define OSI_STACK_SIZE                  (1600) // was 1024
+#define OSI_STACK_SIZE                  (1800) // was 1024
 #define SH_GPIO_3                       (3)  /* P58 - Device Mode */
 #define ROLE_INVALID                    (-5)
 #define AUTO_CONNECTION_TIMEOUT_COUNT   (50)   /* 5 Sec */

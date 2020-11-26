@@ -48,7 +48,7 @@ extern "C"{
 #include "hid/hid.h"
 
 // hw settings
-#define SDHOST_CLK_SPEED 24000000
+#define SDHOST_CLK_SPEED 15000000
 extern void SDHostIntHandler();
 
 #ifdef __cplusplus
