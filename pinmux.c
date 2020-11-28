@@ -106,7 +106,7 @@ PinMuxConfig(void)
     //
     PinTypeGPIO(PIN_03, PIN_MODE_0, false);
     GPIODirModeSet(GPIOA1_BASE, 0x10, GPIO_DIR_MODE_IN);
-    // Activate internal pull-down resistor on PIN_61
+    // Activate internal pull-down resistor on PIN_03
     MAP_PinConfigSet(PIN_03, PIN_STRENGTH_2MA, PIN_TYPE_STD_PD);
 
     //
@@ -120,7 +120,7 @@ PinMuxConfig(void)
     MAP_PinTypeI2C(PIN_02, PIN_MODE_1);
 
     //
-    // Configure PIN_64 for SDHost0 SDCARD_DATA
+    // Configure PIN_06 for SDHost0 SDCARD_DATA
     //
     MAP_PinTypeSDHost(PIN_06, PIN_MODE_8);
 
