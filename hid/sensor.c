@@ -48,10 +48,6 @@ extern char mouseClick;
 
 static signed char  aucRdDataBuf[32];
 static signed short sensorData[SENSOR_AXIS]; // {x, y, roll}
-// for source select
-static unsigned int uiGPIOPort;
-static unsigned char pucGPIOPin;
-static unsigned char ucPinValue;
 
 // HID report
 extern volatile unsigned long g_ulImuTimer;
@@ -79,6 +75,9 @@ static char kb[3+KB_MAXNUM_KEY_PRESS]; // 1(modifier) + 1(OEM reserved) + 1(LED)
 
 void sensorInit()
 {
+    unsigned int uiGPIOPort;
+    unsigned char pucGPIOPin;
+    unsigned char ucPinValue;
     GPIO_IF_GetPortNPin(MOUSE_INPUT_SEL_PIN,&uiGPIOPort,&pucGPIOPin);
 
     ucPinValue = GPIO_IF_Get(MOUSE_INPUT_SEL_PIN,uiGPIOPort,pucGPIOPin);
@@ -96,9 +95,13 @@ void sensorRead()
     int i;
     unsigned char ucRegOffset;
     unsigned char ucRdLen;
-    char temp;
+    volatile unsigned char temp;
+    unsigned int uiGPIOPort;
+    unsigned char pucGPIOPin;
+    unsigned char ucPinValue;
 
     // read mpu6050 or bma222 according to compilation time decision
+    GPIO_IF_GetPortNPin(MOUSE_INPUT_SEL_PIN,&uiGPIOPort,&pucGPIOPin);
     ucPinValue = GPIO_IF_Get(MOUSE_INPUT_SEL_PIN,uiGPIOPort,pucGPIOPin);
     if(ucPinValue == MOUSE_INPUT_SELF_ON_VALUE){
         #ifdef USE_MPU6050
@@ -138,8 +141,10 @@ void sensorRead()
         }
         sensorData[0] = (signed char)UartGetChar();
         sensorData[1] = (signed char)UartGetChar();
+        mouseClick =  (signed char)UartGetChar();
         UartPutChar((signed char)sensorData[0]);
         UartPutChar((signed char)sensorData[1]);
+        UartPutChar(mouseClick);
     }
 
 }
@@ -162,14 +167,13 @@ void sensorToReport(char *buff)
     buff[1] = (signed char)(sensorData[1] >> 10);
 #else
     /* using bma222 */
+    unsigned int uiGPIOPort;
+    unsigned char pucGPIOPin;
+    unsigned char ucPinValue;
+
+    GPIO_IF_GetPortNPin(MOUSE_INPUT_SEL_PIN,&uiGPIOPort,&pucGPIOPin);
     ucPinValue = GPIO_IF_Get(MOUSE_INPUT_SEL_PIN,uiGPIOPort,pucGPIOPin);
-    if(ucPinValue == MOUSE_INPUT_SELF_ON_VALUE){
-        buff[0] = mouseClick;
-    }
-    else{
-        buff[0] = (signed char)UartGetChar();
-        UartPutChar(buff[0]);
-    }
+    buff[0] = mouseClick;
     buff[1] = (signed char)sensorData[0];
     buff[2] = (signed char)sensorData[1];
 #endif
@@ -230,40 +234,48 @@ void ImuTimerIntHandler(void)
     unsigned char pucGPIOPin;
     unsigned char ucPinValue;
 
-    lastMousePress = mousePress;
-    mousePress = 0;
-    // mouseClick = 0; // cleared by host
+    // mouse
+    GPIO_IF_GetPortNPin(MOUSE_INPUT_SEL_PIN,&uiGPIOPort,&pucGPIOPin);
+    ucPinValue = GPIO_IF_Get(MOUSE_INPUT_SEL_PIN,uiGPIOPort,pucGPIOPin);
+    
+    // neglect all
+    if(ucPinValue == MOUSE_INPUT_SELF_ON_VALUE){ // read from GPIO
+        lastMousePress = mousePress;
+        mousePress = 0;
+        // mouseClick = 0; // cleared by host
 
-    GPIO_IF_GetPortNPin(MOUSE_BTN_LEFT_PIN,&uiGPIOPort,&pucGPIOPin);
-    ucPinValue = GPIO_IF_Get(MOUSE_BTN_LEFT_PIN,uiGPIOPort,pucGPIOPin);
-    debounceL = (debounceL << 1) | ucPinValue;
-    if(debounceL == 0xff){
-        mousePress |= MOUSE_LEFT;
-        if((mousePress & MOUSE_LEFT) != (lastMousePress & MOUSE_LEFT)){
-            mouseClick |= MOUSE_LEFT;
+        GPIO_IF_GetPortNPin(MOUSE_BTN_LEFT_PIN,&uiGPIOPort,&pucGPIOPin);
+        ucPinValue = GPIO_IF_Get(MOUSE_BTN_LEFT_PIN,uiGPIOPort,pucGPIOPin);
+        debounceL = (debounceL << 1) | ucPinValue;
+        if(debounceL == 0xff){
+            mousePress |= MOUSE_LEFT;
+            if((mousePress & MOUSE_LEFT) != (lastMousePress & MOUSE_LEFT)){
+                mouseClick |= MOUSE_LEFT;
+            }
         }
+
+        GPIO_IF_GetPortNPin(MOUSE_BTN_RIGHT_PIN,&uiGPIOPort,&pucGPIOPin);
+        ucPinValue = GPIO_IF_Get(MOUSE_BTN_RIGHT_PIN, uiGPIOPort,pucGPIOPin);
+        debounceR = (debounceR << 1) | ucPinValue;
+        if(debounceR == 0xff){
+            mousePress |= MOUSE_RIGHT;
+            if((mousePress & MOUSE_RIGHT) != (lastMousePress & MOUSE_RIGHT)){
+                mouseClick |= MOUSE_RIGHT;
+            }
+        }
+
+        GPIO_IF_GetPortNPin(RESET_BTN_PIN,&uiGPIOPort,&pucGPIOPin);
+        ucPinValue = GPIO_IF_Get(RESET_BTN_PIN,uiGPIOPort,pucGPIOPin);
+        debounceReset = (debounceReset << 1) | ucPinValue;
+
+        // @@ reset function is not completed
+        // if(debounceReset == 0xff){
+        //     sl_Stop(RESET_TIMEOUT);
+        //     UartPutChar('D');
+        //     Utils_TriggerHibCycle();
+        // }
     }
 
-    GPIO_IF_GetPortNPin(MOUSE_BTN_RIGHT_PIN,&uiGPIOPort,&pucGPIOPin);
-    ucPinValue = GPIO_IF_Get(MOUSE_BTN_RIGHT_PIN, uiGPIOPort,pucGPIOPin);
-    debounceR = (debounceR << 1) | ucPinValue;
-    if(debounceR == 0xff){
-        mousePress |= MOUSE_RIGHT;
-        if((mousePress & MOUSE_RIGHT) != (lastMousePress & MOUSE_RIGHT)){
-            mouseClick |= MOUSE_RIGHT;
-        }
-    }
-
-    GPIO_IF_GetPortNPin(RESET_BTN_PIN,&uiGPIOPort,&pucGPIOPin);
-    ucPinValue = GPIO_IF_Get(RESET_BTN_PIN,uiGPIOPort,pucGPIOPin);
-    debounceReset = (debounceReset << 1) | ucPinValue;
-
-    // @@ reset function is not completed
-    // if(debounceReset == 0xff){
-    //     sl_Stop(RESET_TIMEOUT);
-    //     UartPutChar('D');
-    //     Utils_TriggerHibCycle();
-    // }
 
     Timer_IF_InterruptClear(g_ulImuTimer);
 

@@ -87,9 +87,9 @@ PinMuxConfig(void)
     //
     // Configure PIN_16 for GPIO Input
     //
-    PinTypeGPIO(PIN_16, PIN_MODE_0, false);
-    GPIODirModeSet(GPIOA2_BASE, 0x80, GPIO_DIR_MODE_IN);
-    MAP_PinConfigSet(PIN_16, PIN_STRENGTH_2MA, PIN_TYPE_STD_PD);
+    // PinTypeGPIO(PIN_16, PIN_MODE_0, false);
+    // GPIODirModeSet(GPIOA2_BASE, 0x80, GPIO_DIR_MODE_IN);
+    // MAP_PinConfigSet(PIN_16, PIN_STRENGTH_2MA, PIN_TYPE_STD_PD);
 
     // @@ As Network Switch
     //

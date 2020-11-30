@@ -9,7 +9,7 @@ extern "C"{
 // connection
 #define MOUSE_PORT (5002)
 #define	LISTENQ	(1024)
-#define HID_REPLY_TIMEOUT (5.0)
+#define HID_REPLY_TIMEOUT (60.0)
 // local
 #define MAXBUFF (128)
 
